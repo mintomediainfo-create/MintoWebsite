@@ -31,8 +31,15 @@ if (!g.__mmPool) {
 g.__mmPool = pool;
 
 export async function q<T = any>(text: string, params: unknown[] = []): Promise<T[]> {
-  const r = await pool.query(text, params as any[]);
-  return r.rows as T[];
+  const t = Date.now();
+  try {
+    const r = await pool.query(text, params as any[]);
+    if (Date.now() - t > 1500) console.log(`slow query ${Date.now() - t}ms: ${text.slice(0, 80)}`);
+    return r.rows as T[];
+  } catch (e) {
+    console.error(`query failed after ${Date.now() - t}ms: ${text.slice(0, 80)} :: ${(e as Error).message}`);
+    throw e;
+  }
 }
 export async function one<T = any>(text: string, params: unknown[] = []): Promise<T | null> {
   const rows = await q<T>(text, params);

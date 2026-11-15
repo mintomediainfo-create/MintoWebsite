@@ -147,9 +147,11 @@ adminRouter.post('/r/:res', async (req, res) => {
 adminRouter.put('/r/:res/:id', async (req, res) => {
   const r = resOr404(req.params.res, res); if (!r) return;
   const id = Number(req.params.id);
+  const t0 = Date.now(); const step = (m: string) => console.log(`   put ${req.params.res}/${id}: ${m} at ${Date.now() - t0}ms`);
   const data = pickColumns(r, req.body);
+  step(`body ok, fields: ${Object.keys(data).join(',')}`);
   let workFeatured = false;
-  if (req.params.res === 'work') { const w = await workRules(data, id, res); if (w === false) return; workFeatured = w; }
+  if (req.params.res === 'work') { const w = await workRules(data, id, res); if (w === false) return; workFeatured = w; step('rules ok'); }
   if (req.params.res === 'intro-media' && !(await introRules(data, id, res, false))) return;
   if (r.slugFrom && 'slug' in data) data.slug = await uniqueSlug(r.table, String(data.slug || req.body?.[r.slugFrom]?.en || 'item'), id);
   const keys = Object.keys(data);
@@ -158,6 +160,7 @@ adminRouter.put('/r/:res/:id', async (req, res) => {
     `UPDATE ${r.table} SET ${keys.map((k, i) => `${k} = $${i + 1}`).join(', ')} WHERE id = $${keys.length + 1} RETURNING *`,
     [...Object.values(data), id]
   );
+  step('update ok');
   if (row && workFeatured) await onlyOneFeatured(id);
   if (row && req.params.res === 'news') await notifyNews(id).catch((e) => console.error('newsletter failed', e));
   row ? res.json(row) : res.status(404).json({ error: 'Not found' });
