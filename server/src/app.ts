@@ -21,17 +21,29 @@ app.use('/api/admin', (req, res, next) => {
   res.on('close', () => { if (!res.writableFinished) console.log(`xx ${req.method} /api/admin${req.path} closed without an answer after ${Date.now() - t}ms`); });
   next();
 });
-// JSON bodies. On Vercel the platform may already have read the request body (req.body is set); reading the stream
-// again then waits forever (FUNCTION_INVOCATION_TIMEOUT on every Save). So use that body when it is there.
-const jsonBody = express.json({ limit: '1mb' });
+// JSON bodies, read by hand: on Vercel a request (Work saves with Arabic text) could hang in express.json() waiting for
+// bytes that never came (FUNCTION_INVOCATION_TIMEOUT). Here: use a body the platform already parsed, else read the
+// stream until it ends, but never wait more than 4 s after the last chunk; then parse what arrived.
 app.use((req, res, next) => {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) || !/json/i.test(req.get('content-type') || '')) return next();
   let pre: unknown;
   try { pre = (req as any).body; } catch { pre = undefined; }
-  if (pre && typeof pre === 'object' && !Buffer.isBuffer(pre)) { (req as any)._body = true; return next(); }
-  if (typeof pre === 'string' && pre && /json/i.test(req.get('content-type') || '')) {
-    try { (req as any).body = JSON.parse(pre); (req as any)._body = true; return next(); } catch { return res.status(400).json({ error: 'Bad JSON' }); }
-  }
-  return jsonBody(req, res, next);
+  if (pre && typeof pre === 'object' && !Buffer.isBuffer(pre)) return next();
+  const chunks: Buffer[] = []; let size = 0, done = false, timer: NodeJS.Timeout;
+  const finish = (why: string) => {
+    if (done) return; done = true; clearTimeout(timer);
+    const raw = Buffer.concat(chunks).toString('utf8');
+    const declared = Number(req.get('content-length') || 0);
+    if (why !== 'end' || (declared && declared !== size)) console.log(`body ${req.method} ${req.path}: ${why}, ${size} of ${declared} bytes`);
+    if (!raw) { (req as any).body = {}; return next(); }
+    try { (req as any).body = JSON.parse(raw); next(); } catch { res.status(400).json({ error: 'Bad JSON' }); }
+  };
+  const arm = () => { clearTimeout(timer); timer = setTimeout(() => finish('timeout'), 4000); };
+  if (typeof pre === 'string' || Buffer.isBuffer(pre)) { chunks.push(Buffer.from(pre as any)); size = chunks[0].length; return finish('end'); }
+  arm();
+  req.on('data', (c: Buffer) => { chunks.push(c); size += c.length; if (size > 1024 * 1024) { done = true; clearTimeout(timer); res.status(413).json({ error: 'Too large' }); } else arm(); });
+  req.on('end', () => finish('end'));
+  req.on('error', () => finish('error'));
 });
 app.use(cookieParser());
 
