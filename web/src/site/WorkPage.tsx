@@ -253,20 +253,11 @@ export default function WorkPage() {
 
   // a tab only shows when it has work in it
   const kinds: [Filter, string][] = [['all', p.all], ...CATS.filter((c) => count(c) > 0).map((c): [Filter, string] => [c, p.tabs[c]])];
-  // the numbers: all projects, then the two biggest tabs
-  const top = CATS.filter((c) => count(c) > 0).sort((a, b) => count(b) - count(a)).slice(0, 2);
-  const stat = (n: number, label: string) => (
-    <span className="wk-statbox" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0 36px' }}>
-      <span className="mm-stat">{n}</span>
-      <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--muted2)' }}>{label}</span>
-    </span>
-  );
-
   return (
     <SiteShell header={<InnerHeader current="work" />}>
       {/* PAGE HERO */}
       <section id="main" style={{ background: 'var(--bg)' }}>
-        {/* one column: the title, the line under it, the text, then the numbers, all on the first screen */}
+        {/* one column: the title, the line under it, then the text, all on the first screen */}
         <div className="mm-wrap pg-hero wk-hero" style={{ paddingTop: 44, paddingBottom: 44, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 26 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h1 className="mm-h1 wk-h1" style={{ margin: 0, fontFamily: "'Minto Head', sans-serif", fontWeight: 400, fontSize: 120, lineHeight: 1, letterSpacing: '-0.01em', textTransform: 'uppercase' }}>
@@ -277,12 +268,6 @@ export default function WorkPage() {
           </div>
           <div className="rv rv-up" style={{ display: 'flex', flexDirection: 'column', gap: 28, maxWidth: 760, transitionDelay: '.2s' }}>
             <p style={{ margin: 0, fontSize: 20, lineHeight: 1.6, color: 'var(--muted)' }}>{p.intro}</p>
-            {items.length > 0 && (
-              <div className="wk-stats" style={{ display: 'flex' }}>
-                {stat(items.length, p.pieces)}
-                {top.map((c) => <span key={c}>{stat(count(c), p.tabs[c])}</span>)}
-              </div>
-            )}
           </div>
         </div>
       </section>
