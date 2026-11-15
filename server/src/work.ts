@@ -15,20 +15,24 @@ const MEDIA = env.MEDIA_URL; // on R2 (npm run media:upload first); locally '' s
 const MINTO = t('Minto Media', 'منتو ميديا');
 const C = {
   zafeer: t('Zafeer', 'زفير'), lulu: t('Lulu Lounge', 'لولو لاونج'), santorini: t('Santorini', 'سانتوريني'), lail: t('Lail', 'ليل'),
-  bob: t('BOB Coffee & Bakery', 'بوب كافيه آند بيكري'), gad: t('Mostafa Gad', 'مصطفى جاد'),
+  bob: t('BOB Coffee & Bakery', 'بوب كافيه آند بيكري'),
 };
 type W = { f: string; kind: 'reel' | 'photo'; cat: Cat; client?: T };
 const reel = (n: number, client?: T): W => ({ f: `r${String(n).padStart(2, '0')}`, kind: 'reel', cat: 'social', client });
 const photo = (n: number, client?: T): W => ({ f: `p${String(n).padStart(2, '0')}`, kind: 'photo', cat: 'photography', client });
+// Lail's own photos (lNN.webp, from the client's Lail folder)
+const lail = (n: number): W => ({ f: `l${String(n).padStart(2, '0')}`, kind: 'photo', cat: 'photography', client: C.lail });
 const oldReel = (n: number, cat: Cat, client?: T): W => ({ f: `w${String(n).padStart(2, '0')}`, kind: 'reel', cat, client });
 
-const HOME: W[] = [reel(18, C.zafeer), reel(2, C.lulu), photo(19, C.bob), reel(31, C.lail), photo(1, C.gad), reel(14, C.santorini)];
+const HOME: W[] = [reel(18, C.zafeer), reel(2, C.lulu), photo(19, C.bob), reel(31, C.lail), lail(2), reel(14, C.santorini)];
 const REEL_NAMES: Record<number, T> = { 2: C.lulu, 15: C.lulu, 19: C.lulu, 14: C.santorini, 18: C.zafeer, 40: C.zafeer, 31: C.lail };
-const PHOTO_NAMES: Record<number, T> = { 1: C.gad, 18: C.bob, 19: C.bob, 21: C.bob, 24: C.bob, 26: C.zafeer };
+const PHOTO_NAMES: Record<number, T> = { 18: C.bob, 19: C.bob, 21: C.bob, 24: C.bob, 26: C.zafeer, 30: C.lail, 31: C.lail };
+const DROPPED_PHOTOS = new Set([1]); // p01 (Mostafa Gad) taken off the site, Nov 2026
 const onHome = new Set(HOME.map((w) => w.f));
 // the rest of the new batch: reels and photos taking turns
 const restReels = Array.from({ length: 40 }, (_, i) => reel(i + 1, REEL_NAMES[i + 1])).filter((w) => !onHome.has(w.f));
-const restPhotos = Array.from({ length: 34 }, (_, i) => photo(i + 1, PHOTO_NAMES[i + 1])).filter((w) => !onHome.has(w.f));
+const batchPhotos = Array.from({ length: 34 }, (_, i) => i + 1).filter((n) => !DROPPED_PHOTOS.has(n)).map((n) => photo(n, PHOTO_NAMES[n]));
+const restPhotos = [lail(1), lail(3), ...batchPhotos].filter((w) => !onHome.has(w.f));
 const mixed: W[] = [];
 for (let i = 0; i < Math.max(restReels.length, restPhotos.length); i++) {
   if (restReels[i]) mixed.push(restReels[i]);
