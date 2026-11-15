@@ -7,6 +7,7 @@
 import { pool, q, one } from './db';
 import { migrate } from './migrate';
 import { seedClients } from './clients';
+import { seedWork } from './work';
 import { env } from './env';
 
 // the media files are on R2 (npm run media:upload first); locally MEDIA_URL is '' and web/public/media is used
@@ -66,14 +67,7 @@ const SERVICES: { title: T; short: T; tags: T[] }[] = [
 
 // the client's videos (compressed, in web/public/media/work): w01 ... w20. Category = the Work page tab.
 type Cat = 'social' | 'branding' | 'photography' | 'video' | 'ads' | 'web';
-const WORK: { n: number; cat: Cat; client?: T }[] = [
-  { n: 6, cat: 'photography' }, // first = Featured (the big card on the home page)
-  { n: 1, cat: 'social', client: t('Zapher', 'زفير') },
-  { n: 13, cat: 'photography' }, { n: 7, cat: 'video' }, { n: 12, cat: 'photography' }, { n: 17, cat: 'video' }, // + these 4 on the home page
-  { n: 2, cat: 'photography' }, { n: 3, cat: 'photography' }, { n: 4, cat: 'photography' }, { n: 5, cat: 'video' }, { n: 8, cat: 'video' },
-  { n: 9, cat: 'video' }, { n: 10, cat: 'ads' }, { n: 11, cat: 'video' }, { n: 14, cat: 'photography' }, { n: 15, cat: 'photography' },
-  { n: 16, cat: 'video' }, { n: 18, cat: 'video' }, { n: 19, cat: 'social' }, { n: 20, cat: 'photography', client: t('Zapher', 'زفير') },
-];
+
 
 const JOB_SECTIONS = [
   {
@@ -103,13 +97,7 @@ async function main() {
   console.log(`services: ${SERVICES.length} saved`);
 
   // work: the sample pieces and the ones this script added before go; the client's videos come in
-  await q("DELETE FROM work_items WHERE client_name->>'en' LIKE '[%' OR url LIKE '%/media/work/%' OR (url = '' AND poster_url = '')");
-  for (const [i, w] of WORK.entries()) {
-    const f = `${MEDIA}/media/work/w${String(w.n).padStart(2, '0')}`;
-    await q('INSERT INTO work_items (kind, category, url, poster_url, client_name, on_home, featured, sort) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
-      ['reel', w.cat, f + '.mp4', f + '.jpg', J(w.client || t('', '')), i < 6, i === 0, i]);
-  }
-  console.log(`work: ${WORK.length} videos saved (6 on the home page)`);
+  await seedWork(); // the Work page (work.ts)
 
   await q('DELETE FROM intro_media');
   for (let i = 1; i <= 3; i++) {
