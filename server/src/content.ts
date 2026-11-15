@@ -101,7 +101,7 @@ async function main() {
 
   await q('DELETE FROM intro_media');
   for (let i = 1; i <= 3; i++) {
-    await q('INSERT INTO intro_media (kind, url, poster_url, sort) VALUES ($1,$2,$3,$4)', ['video', `${MEDIA}/media/intro/i${i}.mp4`, `${MEDIA}/media/intro/i${i}.jpg`, i]);
+    await q('INSERT INTO intro_media (kind, url, poster_url, sort) VALUES ($1,$2,$3,$4)', ['video', `${MEDIA}/media/intro/i${i}.mp4?v=2`, `${MEDIA}/media/intro/i${i}.jpg`, i]);
   }
   console.log('intro: 3 clips saved');
 

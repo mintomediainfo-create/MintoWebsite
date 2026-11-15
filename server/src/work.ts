@@ -50,7 +50,8 @@ export async function seedWork() {
   await q("DELETE FROM work_items WHERE client_name->>'en' LIKE '[%' OR url LIKE '%/media/work/%' OR (url = '' AND poster_url = '')");
   for (const [i, w] of WORK.entries()) {
     const f = `${MEDIA}/media/work/${w.f}`;
-    const [url, poster] = w.kind === 'reel' ? [f + '.mp4', f + '.jpg'] : [f + '.webp', f + '.webp'];
+    // ?v=2: the videos were re-made with sound (Nov 2026); a new address makes browsers drop the silent copies they kept
+    const [url, poster] = w.kind === 'reel' ? [f + '.mp4?v=2', f + '.jpg'] : [f + '.webp', f + '.webp'];
     await q('INSERT INTO work_items (kind, category, url, poster_url, client_name, on_home, featured, sort) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
       [w.kind, w.cat, url, poster, J(w.client || MINTO), i < 6, i === 0, i]);
   }
