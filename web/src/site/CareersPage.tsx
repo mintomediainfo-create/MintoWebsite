@@ -1,7 +1,7 @@
-// Careers: hero, "life at Minto" strip, open roles (from the dashboard), "no role for you yet?".
+// Careers: hero, open roles (from the dashboard), "no role for you yet?".
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { InnerHeader, PageState, SiteShell, useSettings, LOGO } from './Shell';
+import { InnerHeader, PageState, SiteShell, useSettings } from './Shell';
 import { chipStyle } from './pageBits';
 import { usePrefs } from '../lib/prefs';
 import { fmtDate, useApi, type L } from '../lib/api';
@@ -36,10 +36,6 @@ const PG = {
 
 type Job = { id: number; slug: string; title: L; department: L; location: L; job_type: L; level: L; summary: L; deadline: string | null };
 
-// the "life at Minto" strip: coloured blocks from the design (team photos can replace them later)
-const STRIP_COL: [string, string][] = [['#0B4A94', '#D5E3F5'], ['#F68B1F', '#0E1B33'], ['#0F2C52', '#D5E3F5'], ['#0E5E95', '#E6EFFA'], ['#1B2A40', '#C5D6EC'], ['#123E73', '#D5E3F5']];
-const STRIP_W = [300, 420, 260, 360, 300, 440];
-
 const deptKey = (j: Job) => (j.department?.en || j.department?.ar || '').trim().toLowerCase();
 
 export default function CareersPage() {
@@ -61,7 +57,6 @@ export default function CareersPage() {
 
   const careersEmail = (settings?.contact?.careersEmail || settings?.contact?.email) as string | undefined;
 
-  const strip = Array.from({ length: 12 }, (_, i) => ({ col: STRIP_COL[i % 6], w: STRIP_W[i % 6], mt: i % 2 ? 40 : 0 }));
   const meta: React.CSSProperties = { fontSize: 12, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', border: '1px solid var(--line2)', padding: '7px 12px', borderRadius: 999 };
 
   return (
@@ -94,17 +89,6 @@ export default function CareersPage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* LIFE AT MINTO strip */}
-      <section className="mm-ltr" aria-label={p.aLife} style={{ background: 'var(--bg)', overflow: 'hidden', paddingBottom: 120 }}>
-        <div className="mm-strip" aria-hidden="true" style={{ display: 'flex', width: 'max-content', gap: 20 }}>
-          {strip.map((s, i) => (
-            <div key={i} style={{ flex: 'none', position: 'relative', width: s.w, height: 340, borderRadius: 24, background: s.col[0], marginTop: s.mt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src={LOGO} alt="" width={54} height={58} style={{ width: 54, height: 58, objectFit: 'contain', filter: 'brightness(0) invert(1)', opacity: 0.2 }} />
-            </div>
-          ))}
         </div>
       </section>
 

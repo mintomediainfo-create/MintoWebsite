@@ -31,7 +31,7 @@ const NAV: { group: string; items: [to: string, label: string, icon: string][] }
   },
   { group: 'Posts & contact', items: [['/admin/news', 'News', 'news'], ['/admin/inquiries', 'Inquiries', 'mail'], ['/admin/contact', 'Contact & social', 'pin']] },
   { group: 'Careers', items: [['/admin/jobs', 'Jobs', 'case'], ['/admin/applications', 'Applications', 'inbox']] },
-  { group: 'People', items: [['/admin/subscribers', 'Subscribers', 'mail'], ['/admin/notifications', 'Phone alerts', 'bell'], ['/admin/settings', 'Settings', 'cog']] },
+  { group: 'People', items: [['/admin/subscribers', 'Subscribers', 'mail'], ['/admin/notifications', 'Alerts', 'bell'], ['/admin/settings', 'Settings', 'cog']] },
 ];
 
 export default function Admin() {

@@ -50,6 +50,8 @@ git commit -m "Minto Media website"
 | `R2_PRIVATE_BUCKET` | `minto-private` |
 | `R2_PUBLIC_URL` | `https://media.mintomediaagency.com` |
 | `VITE_MEDIA_URL` | **نفس** `https://media.mintomediaagency.com` (الموقع بيجيب منه الهيرو) |
+| `SMTP_HOST`، `SMTP_PORT`، `SMTP_USER`، `SMTP_PASS` | من Brevo (حساب مجاني)، عشان إيميلات التنبيه بالانكويريز والأبلكيشنز والنيوزليتر |
+| `MAIL_FROM` | `Minto Media <no-reply@mintomediaagency.com>` |
 
 - **مهم:** كل الصور والفيديوهات (الهيرو، فيديوهات الأعمال، لوجوهات العملاء) **مش على GitHub**، دي على R2. يعني **R2 لازم يتعمل وتترفع عليه الميديا (الخطوة 7) قبل الـ Deploy**، وإلا الموقع هيطلع من غير صور.
 - **علشان تعمل `JWT_SECRET`** شغّل الأمر ده وانسخ اللي يطلع:

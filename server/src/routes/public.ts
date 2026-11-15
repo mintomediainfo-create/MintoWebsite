@@ -166,7 +166,15 @@ publicRouter.post('/jobs/:slug/apply', async (req, res) => {
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
     [job.id, job.title?.en || job.title?.ar || '', d.fullName, d.email, d.phone, d.city, JSON.stringify(answers), d.cvKey, d.cvName, d.portfolio, d.linkedin, d.lang]
   );
-  await notify('jobs', 'New job application', `${d.fullName} applied for ${job.title?.en || job.title?.ar || 'a job'}`, `/admin/applications/${row?.id}`);
+  const jobTitle = job.title?.en || job.title?.ar || 'a job';
+  await notify('jobs', 'New job application', `${d.fullName} applied for ${jobTitle}`, `/admin/applications/${row?.id}`, {
+    mail: {
+      replyTo: d.email,
+      rows: [['Job', jobTitle], ['Name', d.fullName], ['Email', d.email], ['Phone', d.phone], ['City', d.city], ['Portfolio', d.portfolio], ['LinkedIn', d.linkedin],
+        ['CV', d.cvName ? `${d.cvName} (open it from the dashboard)` : ''],
+        ...answers.map((a: any) => [a.question, Array.isArray(a.answer) ? a.answer.join(', ') : String(a.answer || '')] as [string, string])],
+    },
+  });
   res.status(201).json({ ok: true, id: row?.id });
 });
 
@@ -182,7 +190,13 @@ publicRouter.post('/apply/general', async (req, res) => {
      VALUES (NULL,'',$1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
     [d.fullName, d.email, d.phone, d.city, JSON.stringify(answers), d.cvKey, d.cvName, d.portfolio, d.linkedin, d.lang]
   );
-  await notify('jobs', 'New CV (no specific role)', `${d.fullName} sent a CV${role ? ' · ' + role : ''}`, `/admin/applications/${row?.id}`);
+  await notify('jobs', 'New CV (no specific role)', `${d.fullName} sent a CV${role ? ' · ' + role : ''}`, `/admin/applications/${row?.id}`, {
+    mail: {
+      replyTo: d.email,
+      rows: [['Role they want', role], ['Name', d.fullName], ['Email', d.email], ['Phone', d.phone], ['City', d.city], ['Portfolio', d.portfolio], ['LinkedIn', d.linkedin],
+        ['CV', d.cvName ? `${d.cvName} (open it from the dashboard)` : '']],
+    },
+  });
   res.status(201).json({ ok: true, id: row?.id });
 });
 
@@ -215,7 +229,14 @@ publicRouter.post('/contact', async (req, res) => {
     'INSERT INTO inquiries (full_name, job_title, email, phone, company, services, budget, message, lang) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id',
     [d.fullName, d.jobTitle, d.email, d.phone, d.company, JSON.stringify(d.services), d.budget, d.message, d.lang]
   );
-  await notify('inquiries', 'New inquiry', `${d.fullName} · ${d.phone}${d.company ? ' · ' + d.company : ''}${d.services.length ? ' · ' + d.services.slice(0, 3).join(', ') : ''}`, `/admin/inquiries/${row?.id}`);
+  // phone alert: only the name and company (no phone number on the public ntfy server); the email has everything
+  await notify('inquiries', 'New inquiry', `${d.fullName}${d.company ? ' · ' + d.company : ''}${d.services.length ? ' · ' + d.services.slice(0, 3).join(', ') : ''}`, `/admin/inquiries/${row?.id}`, {
+    mail: {
+      replyTo: d.email || undefined,
+      rows: [['Name', d.fullName], ['Phone', d.phone], ['Email', d.email], ['Job title', d.jobTitle], ['Company', d.company],
+        ['Services', d.services.join(', ')], ['Budget', d.budget], ['Message', d.message], ['Language', d.lang === 'ar' ? 'Arabic' : 'English']],
+    },
+  });
   contactTries.set(ip, { n: (t && t.until > Date.now() ? t.n : 0) + 1, until: t && t.until > Date.now() ? t.until : Date.now() + 60 * 60 * 1000 });
   res.status(201).json({ ok: true });
 });

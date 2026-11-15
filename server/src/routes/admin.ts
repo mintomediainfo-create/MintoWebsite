@@ -48,8 +48,8 @@ adminRouter.get('/settings', async (_req, res) => res.json(await readSettings(tr
 adminRouter.post('/notifications/test', async (req, res) => {
   const kind = req.body?.kind === 'jobs' ? 'jobs' : req.body?.kind === 'inquiries' ? 'inquiries' : null;
   if (!kind) return res.status(400).json({ error: 'Bad request' });
-  const ok = await notify(kind as NotifyKind, 'Test alert from the Minto dashboard', 'If you can read this on your phone, alerts are working.', '/admin/notifications', { force: true });
-  res.json({ ok });
+  const r = await notify(kind as NotifyKind, 'Test alert from the Minto dashboard', 'If you can read this, alerts are working.', '/admin/notifications', { force: true });
+  res.json({ ok: r.phone || r.email === 'sent', ...r });
 });
 adminRouter.put('/settings/:key', async (req, res) => {
   if (!SETTING_KEYS.includes(req.params.key)) return res.status(404).json({ error: 'Unknown setting' });
