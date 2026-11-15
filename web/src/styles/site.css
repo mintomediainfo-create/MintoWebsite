@@ -179,10 +179,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .mm-hero-base{opacity:0}
   .mm-Ld{stroke-dashoffset:0}
   .mm-L,.mm-Ld,.mm-hero-base,.mm-menu,.mm-mlink,.mm-cue,.mm-fade,.mm-strip{animation:none !important}
-  /* the two bands (service words, client logos) still move, just very slowly: phones in power-saving mode turn
+  /* the two bands (service words, client logos) still move, a bit slower: phones in power-saving mode turn
      "reduce motion" on by themselves, and the client wants the bands moving */
-  .mm-marq{animation-duration:160s !important}
-  .mm-logos{animation-duration:240s !important}
+  .mm-marq{animation-duration:75s !important}
+  .mm-logos{animation-duration:85s !important}
   .mm-ready .rv,.mm-ready .ln > span{opacity:1 !important;transform:none !important;transition:none !important}
   .mm-totop:hover .mm-toparr{animation:none}
 }

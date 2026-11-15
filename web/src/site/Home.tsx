@@ -847,7 +847,8 @@ function Clients({ items }: { items: any[] }) {
             return (
               <span key={k} className="mm-logoitem" aria-hidden={copy || undefined}>
                 <span className="mm-clogo" style={{ filter: lg ? lg.fx : undefined }}>
-                  {lg ? <img src={lg.src} alt={copy ? '' : c.name} loading="lazy" decoding="async" /> : <span className="mm-cname">{c.name}</span>}
+                  {/* not lazy: Safari on iPhone does not load lazy images that the moving band brings into view, so they stayed blank */}
+                  {lg ? <img src={lg.src} alt={copy ? '' : c.name} decoding="async" /> : <span className="mm-cname">{c.name}</span>}
                 </span>
                 <img className="mm-sym" src={sym} alt="" width={38} height={40} />
               </span>
