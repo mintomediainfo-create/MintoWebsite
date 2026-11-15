@@ -123,6 +123,15 @@ app.put('/api/_diag/work/:id', async (req, res) => {
     const data = pickColumns(resources.work, req.body); mark(`body ${Object.keys(data).join(',')}`);
     const fake = { status: () => fake, json: () => fake } as any;
     const w = await lim(workRules(data, id, fake), 'rules'); mark(`rules ok featured=${w}`);
+    // ?commit=1: the real save path (pool.query, committed), but with the row's OWN current values, so nothing changes
+    if (req.query.commit) {
+      const cur = await lim(q('SELECT * FROM work_items WHERE id = $1', [id]), 'read row'); mark('read row');
+      const same = pickColumns(resources.work, cur[0] || {});
+      const k2 = Object.keys(same);
+      const u = await lim(q(`UPDATE work_items SET ${k2.map((k, i) => `${k} = $${i + 1}`).join(', ')} WHERE id = $${k2.length + 1} RETURNING id`, [...Object.values(same), id]), 'committed update');
+      mark(`committed update rows=${u.length}`);
+      return res.json(out);
+    }
     c = await lim(pool.connect(), 'connect'); mark('connected');
     await lim(c.query('BEGIN'), 'begin');
     const keys = Object.keys(data);
