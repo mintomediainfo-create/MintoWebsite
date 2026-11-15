@@ -1,6 +1,6 @@
 // Puts the client's real content (from "محتوى الويب سايت.docx", Nov 2026) into the database:
-// the 7 services, the work videos (files in web/public/media), the 3 intro clips, the client logos (clients.ts), the contact e-mails
-// and the Graphic Designer job.
+// the 7 services, the work videos (on R2), the 3 intro clips, the client logos (clients.ts), the contact details (e-mails, phones,
+// WhatsApp, both offices with maps), the social links and the Graphic Designer job.
 //   npm run db:content
 // It OVERWRITES the services, the intro clips and the work pieces it added before, so run it on a fresh database (after db:seed),
 // not after the client edited those in the dashboard. Work pieces added in the dashboard are kept.
@@ -130,9 +130,28 @@ async function main() {
   const contact = { ...(row?.value || {}) };
   contact.email ||= 'contact@mintomediaagency.com';
   contact.careersEmail ||= 'careers@mintomediaagency.com';
+  // phones, WhatsApp and the two offices (as set in the dashboard, Nov 2026); only fills what is still empty
+  contact.phone ||= '+20 12 0812 2275';
+  contact.whatsapp ||= '+20 12 0812 2275';
+  contact.phoneUae ||= '+971 56 437 7899';
+  contact.whatsappUae ||= '+971 56 437 7899';
+  if (!contact.address?.en) contact.address = t('Alexandria, Egypt', 'الإسكندرية، مصر');
+  contact.mapUrl ||= 'https://maps.app.goo.gl/SWP4MTVdpnFzmYBy5';
+  if (!contact.addressUae?.en) contact.addressUae = t('Dubai, UAE', 'دبي، الإمارات');
+  contact.mapUrlUae ||= 'https://maps.app.goo.gl/xNbWme9Y9sCAyQQo7';
   if (String(contact.phone || '').includes('XXXX')) contact.phone = ''; // the sample placeholder number
   await q(`INSERT INTO settings (key, value, updated_at) VALUES ('contact', $1, now()) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`, [J(contact)]);
   console.log('contact: saved');
+
+  // social links (footer + contact page); only fills what is still empty
+  const srow = await one<{ value: any }>("SELECT value FROM settings WHERE key = 'social'");
+  const social = { ...(srow?.value || {}) };
+  social.facebook ||= 'https://www.facebook.com/share/1LBfc2Zu3Z/';
+  social.instagram ||= 'https://www.instagram.com/mintomediaagency/';
+  social.linkedin ||= 'https://www.linkedin.com/company/minto-media-agency/';
+  social.tiktok ||= 'https://www.tiktok.com/@mintomediaagency';
+  await q(`INSERT INTO settings (key, value, updated_at) VALUES ('social', $1, now()) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`, [J(social)]);
+  console.log('social: saved');
 
   // jobs: the Graphic Designer job; sample jobs that were never edited are removed
   await q("DELETE FROM jobs WHERE slug <> 'graphic-designer' AND summary->>'en' LIKE '[%'");
