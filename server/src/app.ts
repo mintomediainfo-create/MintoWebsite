@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import fs from 'fs';
 import path from 'path';
 import { publicRouter } from './routes/public';
-import { adminRouter } from './routes/admin';
+import { adminRouter, workRules } from './routes/admin';
 import { authRouter } from './routes/auth';
 import { useR2, LOCAL_DIR } from './lib/storage';
 import { isProd } from './env';
@@ -92,6 +92,7 @@ app.get('/api/_diag/work/:id', async (req, res) => {
   const lim = (p: Promise<any>, what: string): Promise<any> => Promise.race([p, new Promise<any>((_, r) => setTimeout(() => r(new Error('TIMEOUT ' + what)), 6000))]);
   let c: any;
   try {
+    mark(`commit ${process.env.VERCEL_GIT_COMMIT_SHA || 'local'} | workRules: ${workRules.toString().replace(/\s+/g, ' ').slice(0, 260)}`);
     mark(`pool total=${pool.totalCount} idle=${pool.idleCount} waiting=${pool.waitingCount}`);
     c = await lim(pool.connect(), 'connect'); mark('connected');
     await lim(c.query('BEGIN'), 'begin'); mark('begin');

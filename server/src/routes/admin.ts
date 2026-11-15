@@ -96,7 +96,7 @@ function withLimit<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
   return Promise.race([p, new Promise<T>((_, rej) => { t = setTimeout(() => rej(new Error(`The database did not answer in time (${what}). Please try again.`)), ms); })])
     .finally(() => clearTimeout(t));
 }
-async function workRules(data: Record<string, any>, id: number | null, res: any) {
+export async function workRules(data: Record<string, any>, id: number | null, res: any) {
   // the saved state is only needed for fields the request leaves out (the dashboard always sends all three)
   const all = 'featured' in data && 'on_home' in data && 'active' in data;
   const cur = id && !all ? await withLimit(one<any>('SELECT featured, on_home, active FROM work_items WHERE id = $1', [id]), 5000, 'reading the work item') : null;
