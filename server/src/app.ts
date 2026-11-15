@@ -7,7 +7,7 @@ import { adminRouter } from './routes/admin';
 import { authRouter } from './routes/auth';
 import { useR2, LOCAL_DIR } from './lib/storage';
 import { isProd } from './env';
-import { q } from './db';
+import { pool, q } from './db';
 
 const app = express();
 app.disable('x-powered-by');
@@ -86,7 +86,6 @@ app.use('/api', wrap(publicRouter));
 // inside a transaction that is rolled back (nothing changes). Needs the key.
 app.get('/api/_diag/work/:id', async (req, res) => {
   if (req.query.k !== 'e349e7aab9f9bbaf24ee13b5') return res.status(404).end();
-  const { pool } = await import('./db');
   const id = Number(req.params.id);
   const out: string[] = []; const t0 = Date.now(); const mark = (m: string) => out.push(`${Date.now() - t0}ms ${m}`);
   const lim = (p: Promise<any>, what: string): Promise<any> => Promise.race([p, new Promise<any>((_, r) => setTimeout(() => r(new Error('TIMEOUT ' + what)), 6000))]);
