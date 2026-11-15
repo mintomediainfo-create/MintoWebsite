@@ -40,13 +40,29 @@ async function job(input: Uint8Array, inName: string, args: string[], outName: s
 const extOf = (name: string) => (name.match(/\.[a-z0-9]{1,5}$/i)?.[0] || '.mp4').toLowerCase();
 const baseOf = (name: string) => name.replace(/\.[^.]+$/, '').replace(/[^a-z0-9-_]/gi, '-').slice(0, 30) || 'video';
 
+/** Any video the browser can hand us: by its type, or by its name when the browser gives no type (common for .mov, .mkv ...). */
+export const VIDEO_EXT = /\.(mp4|m4v|mov|qt|webm|mkv|avi|3gp|3g2|mpe?g|wmv|flv|hevc|ts|mts)$/i;
+export const isVideoFile = (f: File) => f.type.startsWith('video/') || VIDEO_EXT.test(f.name);
+// what every browser plays as it is; anything else (MOV, MKV, AVI ...) is always converted to MP4
+const PLAYS_EVERYWHERE = /^video\/(mp4|webm)$/;
+
 /** Any video upload. onProgress gets 0..1 while it works. */
 export async function compressVideo(file: File, onProgress?: (p: number) => void): Promise<Compressed> {
   const same: Compressed = { file, before: file.size, after: file.size, changed: false };
-  if (file.size < SKIP_BELOW || typeof WebAssembly === 'undefined') return same;
+  const mustConvert = !PLAYS_EVERYWHERE.test(file.type);
+  if (typeof WebAssembly === 'undefined') {
+    if (mustConvert) throw new Error('This browser cannot convert this video. Please use Chrome or Edge, or upload an MP4.');
+    return same;
+  }
+  if (!mustConvert && file.size < SKIP_BELOW) return same;
   const inName = 'in' + extOf(file.name);
   const data = await job(await fetchFile(file), inName,
     ['-i', inName, '-vf', FIT(MAX_SIDE), '-crf', '28', ...ENC, '-c:a', 'aac', '-b:a', '96k', 'out.mp4'], 'out.mp4', onProgress);
+  if (mustConvert) {
+    if (!data) throw new Error('This video could not be converted. Please try another file, or export it as MP4 first.');
+    const out = new File([data], baseOf(file.name) + '.mp4', { type: 'video/mp4' });
+    return { file: out, before: file.size, after: out.size, changed: true };
+  }
   if (!data || data.byteLength > file.size * 0.9) return same;
   const out = new File([data], baseOf(file.name) + '.mp4', { type: 'video/mp4' });
   return { file: out, before: file.size, after: out.size, changed: true };

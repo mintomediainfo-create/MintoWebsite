@@ -6,7 +6,7 @@ import {
 } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ApiError, L, api, isVideo, uploadFile } from '../lib/api';
-import { compressImage, fmtSize } from '../lib/compress';
+import { compressImage, fmtSize, isImageFile } from '../lib/compress';
 
 /* ------------------------------------------------------------------ helpers */
 
@@ -481,9 +481,9 @@ export function LListEditor({ label, items, onChange, addLabel = 'Add', itemName
 
 /* ------------------------------------------------------------------ media */
 
-const IMG_TYPES = 'image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/avif';
-const VID_TYPES = 'video/mp4,video/webm,video/quicktime';
-const OK_TYPE = /^(image\/(png|jpe?g|webp|gif|svg\+xml|avif)|video\/(mp4|webm|quicktime))$/;
+const IMG_TYPES = 'image/*,.heic,.heif,.jfif';
+const VID_TYPES = 'video/*,.mp4,.m4v,.mov,.webm,.mkv,.avi,.3gp,.mpeg,.mpg,.wmv,.mts';
+const VIDEO_EXT = /\.(mp4|m4v|mov|qt|webm|mkv|avi|3gp|3g2|mpe?g|wmv|flv|hevc|ts|mts)$/i; // same list as lib/compressVideo.ts
 
 export function Thumb({ url, poster, kind, alt = '', className, style }: { url?: string; poster?: string; kind?: string; alt?: string; className?: string; style?: CSSProperties }) {
   const vid = kind === 'video' || kind === 'reel' || isVideo(url || '');
@@ -520,21 +520,23 @@ export function MediaInput({ label, value, onChange, folder, accept = 'image', h
   const [urlDraft, setUrlDraft] = useState('');
   const labelId = useId();
   const types = accept === 'image' ? IMG_TYPES : accept === 'video' ? VID_TYPES : IMG_TYPES + ',' + VID_TYPES;
-  const what = accept === 'image' ? 'a picture (JPG, PNG, WebP, SVG)' : accept === 'video' ? 'a video (MP4, WebM, MOV)' : 'a picture or a video';
+  const what = accept === 'image' ? 'a picture (any format: JPG, PNG, HEIC ...)' : accept === 'video' ? 'a video (any format: MP4, MOV ...)' : 'a picture or a video';
 
   async function take(file?: File | null) {
     if (!file) return;
-    const okKind = accept === 'any' || file.type.startsWith(accept + '/');
-    if (!OK_TYPE.test(file.type) || !okKind) { toast(`This file type is not allowed here. Please choose ${what}.`, 'error'); return; }
+    // any picture or video is fine: below, pictures become WebP and videos MP4 when they are not web formats already
+    const kind = isImageFile(file) ? 'image' : file.type.startsWith('video/') || VIDEO_EXT.test(file.name) ? 'video' : '';
+    const okKind = !!kind && (accept === 'any' || accept === kind);
+    if (!okKind) { toast(`This file type is not allowed here. Please choose ${what}.`, 'error'); return; }
     setProgress(0);
     try {
       let up = file;
       let note = '';
-      if (file.type.startsWith('image/')) {
+      if (kind === 'image') {
         const c = await compressImage(file); // smaller file, same look
         up = c.file;
         if (c.changed) note = ` Made smaller: ${fmtSize(c.before)} → ${fmtSize(c.after)}.`;
-      } else if (file.type.startsWith('video/')) {
+      } else if (kind === 'video') {
         const { compressVideo, VIDEO_MAX } = await import('../lib/compressVideo'); // big library, loaded only here
         if (file.size > VIDEO_MAX) { toast(`This video is ${fmtSize(file.size)}. Please make it smaller than ${fmtSize(VIDEO_MAX)} first.`, 'error'); return; }
         setPhase('compress');
@@ -552,7 +554,7 @@ export function MediaInput({ label, value, onChange, folder, accept = 'image', h
       }
       const r = await uploadFile(up, { path: '/admin/upload-url', body: { folder, filename: up.name, contentType: up.type } }, (p) => setProgress(p));
       onChange(r.publicUrl || '');
-      onKind?.(file.type.startsWith('video/') ? 'video' : 'image');
+      onKind?.(kind === 'video' ? 'video' : 'image');
       toast('File uploaded. Remember to save.' + note);
     } catch (e) {
       fail(e);

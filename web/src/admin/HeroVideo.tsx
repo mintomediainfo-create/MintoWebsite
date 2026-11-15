@@ -10,7 +10,8 @@ import { Card, ErrorBox, Icon, PageHead, Skeleton, useUi } from './ui';
 type Hero = { videoUrl: string; posterUrl: string; phoneVideoUrl: string; phonePosterUrl: string; upright?: boolean };
 const BUILT_IN = { videoUrl: media('/media/hero/hero.mp4'), phoneVideoUrl: media('/media/hero/hero-mobile.mp4'),
   posterUrl: media('/media/hero/hero-poster.jpg'), phonePosterUrl: media('/media/hero/hero-poster-mobile.jpg') };
-const VID_TYPES = 'video/mp4,video/webm,video/quicktime';
+const VID_TYPES = 'video/*,.mp4,.m4v,.mov,.webm,.mkv,.avi,.3gp,.mpeg,.mpg,.wmv,.mts';
+const VIDEO_EXT = /\.(mp4|m4v|mov|qt|webm|mkv|avi|3gp|3g2|mpe?g|wmv|flv|hevc|ts|mts)$/i;
 const MAX = 500 * 1024 * 1024;
 
 export default function HeroVideo() {
@@ -26,7 +27,7 @@ export default function HeroVideo() {
 
   async function take(file?: File | null) {
     if (!file || busy) return;
-    if (!/^video\/(mp4|webm|quicktime)$/.test(file.type)) { toast('Please choose a video (MP4, MOV or WebM).', 'error'); return; }
+    if (!file.type.startsWith('video/') && !VIDEO_EXT.test(file.name)) { toast('Please choose a video file.', 'error'); return; }
     if (file.size > MAX) { toast(`This video is ${fmtSize(file.size)}. Please make it smaller than ${fmtSize(MAX)} first.`, 'error'); return; }
     const stop = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
     window.addEventListener('beforeunload', stop);
@@ -82,7 +83,7 @@ export default function HeroVideo() {
             <button type="button" className={'adm-drop' + (drag ? ' drag' : '')} onClick={() => fileRef.current?.click()} disabled={!!busy} {...dropProps}>
               <Icon name="upload" size={22} />
               <span><b>Drag a video here</b> or <u>choose one</u></span>
-              <small>MP4, MOV or WebM</small>
+              <small>Any video: MP4, MOV, WebM ...</small>
             </button>
             {busy && (
               <div className="adm-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(busy.p * 100)}
