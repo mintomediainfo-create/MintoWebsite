@@ -208,7 +208,7 @@
 .mm-ntitle{font-size:24px;font-weight:700;line-height:1.3}
 
 /* ---------- careers ---------- */
-.mm-careers{background:var(--bg)}
+.mm-careers{background:var(--bg);padding-top:150px} /* its own space above: the sections that used to come before it (news, story) can be hidden */
 .mm-cta{background:#F68B1F;color:#0E1B33;border-radius:32px;padding:72px 64px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:32px}
 .mm-ctabtn{display:inline-flex;align-items:center;gap:12px;text-decoration:none;background:#0E1B33;color:#ffffff;font-weight:800;font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:20px 32px;border-radius:999px;transition:transform .2s ease,box-shadow .2s ease}
 .mm-ctabtn:hover{color:#ffffff;transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(14,27,51,.8)}
@@ -296,6 +296,7 @@
   .mm-pin-in{gap:44px}
   /* careers */
   .mm-cta{padding:40px 24px !important;border-radius:24px !important}
+  .mm-careers{padding-top:84px}
   .mm-careers .mm-wrap{padding-bottom:84px !important}
   .mm-news .mm-newsgrid{grid-template-columns:1fr}
 }
