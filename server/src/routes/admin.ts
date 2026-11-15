@@ -96,7 +96,9 @@ function withLimit<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
   return Promise.race([p, new Promise<T>((_, rej) => { t = setTimeout(() => rej(new Error(`The database did not answer in time (${what}). Please try again.`)), ms); })])
     .finally(() => clearTimeout(t));
 }
-export async function workRules(data: Record<string, any>, id: number | null, res: any) {
+/** Returns whether the piece is Featured, or null when the save is refused (the 409 answer is already sent).
+ *  (It used to return false for both: every save of a piece that is not Featured stopped without an answer and hung.) */
+export async function workRules(data: Record<string, any>, id: number | null, res: any): Promise<boolean | null> {
   // the saved state is only needed for fields the request leaves out (the dashboard always sends all three)
   const all = 'featured' in data && 'on_home' in data && 'active' in data;
   const cur = id && !all ? await withLimit(one<any>('SELECT featured, on_home, active FROM work_items WHERE id = $1', [id]), 5000, 'reading the work item') : null;
@@ -106,7 +108,7 @@ export async function workRules(data: Record<string, any>, id: number | null, re
   const active = 'active' in data ? !!data.active : cur ? !!cur.active : true;
   if (onHome && !featured && active) {
     const n = await withLimit(one<{ n: string }>('SELECT count(*) AS n FROM work_items WHERE on_home AND active AND NOT featured AND ($1::int IS NULL OR id <> $1)', [id]), 5000, 'counting the home page pieces');
-    if (Number(n?.n || 0) >= HOME_EXTRA) { res.status(409).json({ error: `The home page already shows ${HOME_EXTRA} pieces plus the Featured one. Turn off “Show on home page” on another piece first.` }); return false; }
+    if (Number(n?.n || 0) >= HOME_EXTRA) { res.status(409).json({ error: `The home page already shows ${HOME_EXTRA} pieces plus the Featured one. Turn off “Show on home page” on another piece first.` }); return null; }
   }
   return featured;
 }
@@ -130,7 +132,7 @@ adminRouter.post('/r/:res', async (req, res) => {
   const r = resOr404(req.params.res, res); if (!r) return;
   const data = pickColumns(r, req.body);
   let workFeatured = false;
-  if (req.params.res === 'work') { const w = await workRules(data, null, res); if (w === false) return; workFeatured = w; }
+  if (req.params.res === 'work') { const w = await workRules(data, null, res); if (w === null) return; workFeatured = w; }
   if (req.params.res === 'intro-media' && !(await introRules(data, null, res, true))) return;
   if (r.slugFrom) {
     const src = req.body?.slug || req.body?.[r.slugFrom]?.en || req.body?.[r.slugFrom]?.ar || 'item';
@@ -159,7 +161,7 @@ adminRouter.put('/r/:res/:id', async (req, res) => {
   const data = pickColumns(r, req.body);
   step(`body ok, fields: ${Object.keys(data).join(',')}`);
   let workFeatured = false;
-  if (req.params.res === 'work') { const w = await workRules(data, id, res); if (w === false) return; workFeatured = w; step('rules ok'); }
+  if (req.params.res === 'work') { const w = await workRules(data, id, res); if (w === null) return; workFeatured = w; }
   if (req.params.res === 'intro-media' && !(await introRules(data, id, res, false))) return;
   if (r.slugFrom && 'slug' in data) data.slug = await uniqueSlug(r.table, String(data.slug || req.body?.[r.slugFrom]?.en || 'item'), id);
   const keys = Object.keys(data);

@@ -3,12 +3,11 @@ import cookieParser from 'cookie-parser';
 import fs from 'fs';
 import path from 'path';
 import { publicRouter } from './routes/public';
-import { adminRouter, workRules } from './routes/admin';
+import { adminRouter } from './routes/admin';
 import { authRouter } from './routes/auth';
 import { useR2, LOCAL_DIR } from './lib/storage';
 import { isProd } from './env';
-import { pool, q } from './db';
-import { resources, pickColumns } from './resources';
+import { q } from './db';
 
 const app = express();
 app.disable('x-powered-by');
@@ -82,68 +81,6 @@ app.get('/sitemap.xml', async (req, res, next) => {
 app.use('/api/auth', wrap(authRouter));
 app.use('/api/admin', wrap(adminRouter));
 app.use('/api', wrap(publicRouter));
-
-// TEMPORARY diagnosis of the Work save hang (remove after): does the same work as a Work save, timed step by step,
-// inside a transaction that is rolled back (nothing changes). Needs the key.
-app.get('/api/_diag/work/:id', async (req, res) => {
-  if (req.query.k !== 'e349e7aab9f9bbaf24ee13b5') return res.status(404).end();
-  const id = Number(req.params.id);
-  const out: string[] = []; const t0 = Date.now(); const mark = (m: string) => out.push(`${Date.now() - t0}ms ${m}`);
-  const lim = (p: Promise<any>, what: string): Promise<any> => Promise.race([p, new Promise<any>((_, r) => setTimeout(() => r(new Error('TIMEOUT ' + what)), 6000))]);
-  let c: any;
-  try {
-    mark(`commit ${process.env.VERCEL_GIT_COMMIT_SHA || 'local'} | workRules: ${workRules.toString().replace(/\s+/g, ' ').slice(0, 260)}`);
-    mark(`pool total=${pool.totalCount} idle=${pool.idleCount} waiting=${pool.waitingCount}`);
-    c = await lim(pool.connect(), 'connect'); mark('connected');
-    await lim(c.query('BEGIN'), 'begin'); mark('begin');
-    const a = await lim(c.query('SELECT featured, on_home, active FROM work_items WHERE id = $1', [id]), 'select'); mark(`select rows=${a.rowCount}`);
-    const b = await lim(c.query('UPDATE work_items SET client_name = client_name WHERE id = $1 RETURNING *', [id]), 'update'); mark(`update rows=${b.rowCount}`);
-    // the real save: every field the dashboard sends (the row's own values), through pickColumns, same SQL as the route
-    if (req.query.full) {
-      const data = pickColumns(resources.work, { ...a.rows[0], ...(await c.query('SELECT * FROM work_items WHERE id = $1', [id])).rows[0] });
-      const keys = Object.keys(data); mark(`fields ${keys.join(',')}`);
-      const f = await lim(c.query(`UPDATE work_items SET ${keys.map((k, i) => `${k} = $${i + 1}`).join(', ')} WHERE id = $${keys.length + 1} RETURNING *`, [...Object.values(data), id]), 'full update');
-      mark(`full update rows=${f.rowCount}`);
-    }
-    await lim(c.query('ROLLBACK'), 'rollback'); mark('rolled back');
-  } catch (e) {
-    mark('ERROR ' + (e as Error).message);
-    try { await c?.query('ROLLBACK'); } catch { /* ignore */ }
-  } finally { try { c?.release(true); } catch { /* ignore */ } }
-  res.json(out);
-});
-// the same, but as a PUT with the dashboard's JSON body (tests the request + body + rules path), rolled back
-app.put('/api/_diag/work/:id', async (req, res) => {
-  if (req.query.k !== 'e349e7aab9f9bbaf24ee13b5') return res.status(404).end();
-  const id = Number(req.params.id);
-  const out: string[] = []; const t0 = Date.now(); const mark = (m: string) => out.push(`${Date.now() - t0}ms ${m}`);
-  const lim = (p: Promise<any>, what: string): Promise<any> => Promise.race([p, new Promise<any>((_, r) => setTimeout(() => r(new Error('TIMEOUT ' + what)), 6000))]);
-  let c: any;
-  try {
-    const data = pickColumns(resources.work, req.body); mark(`body ${Object.keys(data).join(',')}`);
-    const fake = { status: () => fake, json: () => fake } as any;
-    const w = await lim(workRules(data, id, fake), 'rules'); mark(`rules ok featured=${w}`);
-    // ?commit=1: the real save path (pool.query, committed), but with the row's OWN current values, so nothing changes
-    if (req.query.commit) {
-      const cur = await lim(q('SELECT * FROM work_items WHERE id = $1', [id]), 'read row'); mark('read row');
-      const same = pickColumns(resources.work, cur[0] || {});
-      const k2 = Object.keys(same);
-      const u = await lim(q(`UPDATE work_items SET ${k2.map((k, i) => `${k} = $${i + 1}`).join(', ')} WHERE id = $${k2.length + 1} RETURNING id`, [...Object.values(same), id]), 'committed update');
-      mark(`committed update rows=${u.length}`);
-      return res.json(out);
-    }
-    c = await lim(pool.connect(), 'connect'); mark('connected');
-    await lim(c.query('BEGIN'), 'begin');
-    const keys = Object.keys(data);
-    const f = await lim(c.query(`UPDATE work_items SET ${keys.map((k, i) => `${k} = $${i + 1}`).join(', ')} WHERE id = $${keys.length + 1} RETURNING *`, [...Object.values(data), id]), 'update');
-    mark(`update rows=${f.rowCount}`);
-    await lim(c.query('ROLLBACK'), 'rollback'); mark('rolled back');
-  } catch (e) {
-    mark('ERROR ' + (e as Error).message);
-    try { await c?.query('ROLLBACK'); } catch { /* ignore */ }
-  } finally { try { c?.release(true); } catch { /* ignore */ } }
-  res.json(out);
-});
 
 // development only: when R2 is not set up, uploads are written to server/uploads
 if (!useR2) {
