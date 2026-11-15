@@ -8,6 +8,7 @@ import { authRouter } from './routes/auth';
 import { useR2, LOCAL_DIR } from './lib/storage';
 import { isProd } from './env';
 import { pool, q } from './db';
+import { resources, pickColumns } from './resources';
 
 const app = express();
 app.disable('x-powered-by');
@@ -96,6 +97,13 @@ app.get('/api/_diag/work/:id', async (req, res) => {
     await lim(c.query('BEGIN'), 'begin'); mark('begin');
     const a = await lim(c.query('SELECT featured, on_home, active FROM work_items WHERE id = $1', [id]), 'select'); mark(`select rows=${a.rowCount}`);
     const b = await lim(c.query('UPDATE work_items SET client_name = client_name WHERE id = $1 RETURNING *', [id]), 'update'); mark(`update rows=${b.rowCount}`);
+    // the real save: every field the dashboard sends (the row's own values), through pickColumns, same SQL as the route
+    if (req.query.full) {
+      const data = pickColumns(resources.work, { ...a.rows[0], ...(await c.query('SELECT * FROM work_items WHERE id = $1', [id])).rows[0] });
+      const keys = Object.keys(data); mark(`fields ${keys.join(',')}`);
+      const f = await lim(c.query(`UPDATE work_items SET ${keys.map((k, i) => `${k} = $${i + 1}`).join(', ')} WHERE id = $${keys.length + 1} RETURNING *`, [...Object.values(data), id]), 'full update');
+      mark(`full update rows=${f.rowCount}`);
+    }
     await lim(c.query('ROLLBACK'), 'rollback'); mark('rolled back');
   } catch (e) {
     mark('ERROR ' + (e as Error).message);
