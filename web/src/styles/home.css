@@ -1,0 +1,379 @@
+/* ===== Minto Media — home page (ported from Home-Final.dc.html) ===== */
+
+/* section paddings (phones get 84px, see the bottom) */
+.mm-p130{padding-top:130px;padding-bottom:130px}
+.mm-p140{padding-top:140px;padding-bottom:140px}
+.mm-col{display:flex;flex-direction:column}
+.mm-headrow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px}
+
+/* ---------- hero ---------- */
+.mm-hero{position:relative;height:calc(100vh - 81px);min-height:640px;max-height:1000px;overflow:hidden;background:var(--card)}
+.mm-hero-bg,.mm-hero-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#050B16;display:block}
+/* the video fills the whole hero, edge to edge (a little is cut off top/bottom or at the sides, depending on the screen);
+   the blurred first frame behind only shows for a moment before the video starts */
+.mm-hero-vid{object-fit:cover;background:transparent}
+/* an upright video uploaded in the dashboard: on a wide screen show it whole in the middle, the blurred fill on the sides */
+.mm-hero-upright .mm-hero-vid{object-fit:contain}
+.mm-hero:has(.mm-hero-fill){background:#050B16} /* dark under the blurred fill, so its soft edge never shows light */
+.mm-hero-fill{position:absolute;inset:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(28px) brightness(.55);display:block;will-change:transform}
+.mm-hero-svg{position:absolute;inset:0;width:100%;height:100%;display:block;will-change:transform;transform:translateZ(0)}
+.mm-hero-logo{position:absolute;left:22px;z-index:3;display:flex;align-items:center;gap:12px;filter:drop-shadow(0 2px 10px rgba(0,0,0,.45))}
+.mm-hero-logo.tl{top:22px}.mm-hero-logo.bl{bottom:34px}
+.mm-hero-logo img{width:46px;height:48px;object-fit:contain;display:block}
+.mm-hero-land{background:#F68B1F !important} /* phone option: landscape video band in the middle, orange above and below */
+.mm-hero-land .mm-hero-fill{display:none}
+.mm-hero-land .mm-hero-vid,.mm-hero-land .mm-hero-svg{inset:auto;left:0;right:0;top:50%;width:100%;height:auto;aspect-ratio:1440 / 820;transform:translateY(-50%)}
+.mm-hero-land .mm-hero-vid{object-fit:cover}
+.mm-hero.mm-hero-landtop{height:auto !important;min-height:0 !important;aspect-ratio:1440 / 820;background:#050B16 !important}
+.mm-hero-landtop .mm-hero-vid,.mm-hero-landtop .mm-hero-svg{top:0;transform:none}
+.mm-hero-landtop .mm-hero-cue{display:none}
+/* phone option ?mhero=impact: the letters take the first screen minus the moving words bar, which sits right under */
+.mm-hero.mm-hero-impact{height:calc(100svh - 67px - var(--mm-marqh, 64px)) !important;min-height:0 !important}
+.mm-hero-impact .mm-hero-cue{display:none}
+.mm-hero-cue{position:absolute;left:50%;bottom:0;width:44px;height:70px;margin-left:-22px;z-index:5;display:flex;justify-content:center;overflow:hidden}
+.mm-hero-cue > span{display:block;width:2px;height:100%;position:absolute}
+
+/* ---------- marquee under the hero ---------- */
+.mm-marqwrap{border-bottom:1px solid var(--line);overflow:hidden;padding:22px 0;background:var(--bg)}
+.mm-marq{will-change:transform;display:flex;width:max-content;gap:48px;font-family:'Minto Head',sans-serif;font-size:44px;text-transform:uppercase;white-space:nowrap}
+.mm-marq .mm-dot{color:#F68B1F}
+
+/* ---------- intro: we support your success ---------- */
+.mm-intro{background:var(--bg);overflow:hidden}
+.mm-intro-in{display:flex;flex-direction:column;gap:72px}
+.mm-intro-head{display:flex;flex-wrap:wrap;gap:48px;align-items:flex-end;justify-content:space-between}
+.mm-intro-p{margin:0;max-width:500px;font-size:22px;line-height:1.5;color:var(--muted)}
+.mm-pill{display:inline-grid;vertical-align:bottom;overflow:hidden;background:#F68B1F;color:#0E1B33;border-radius:26px;padding:0 .16em;height:1em;line-height:1.02em}
+.mm-pill > span{grid-area:1 / 1;transition:transform .7s cubic-bezier(.7,0,.2,1)}
+/* the little stat shown between two words, inside the same orange box */
+.mm-pill > .mm-pn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1;white-space:nowrap}
+.mm-pn-main{display:flex;align-items:center;gap:.08em;font-size:.66em;line-height:.9;font-variant-numeric:tabular-nums}
+.mm-pn-ico{width:.62em;height:.62em;flex:none;animation:mm-pnbob 1s ease-in-out infinite alternate}
+.mm-pn-lbl{font-family:'Minto Sans','Minto Arabic',sans-serif;font-size:.17em;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.8;margin-top:.1em}
+@keyframes mm-pnbob{from{transform:translateY(.04em)}to{transform:translateY(-.05em)}}
+.mm-clips{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.mm-clip{position:relative;overflow:hidden;height:400px;border-radius:24px;display:flex;align-items:flex-end;padding:24px;font-size:14px}
+.mm-clips > .mm-clip:nth-child(3n+2){margin-top:72px}
+.mm-clip-shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,11,22,.72),rgba(5,11,22,0) 55%);pointer-events:none}
+.mm-clip-cap{position:relative;z-index:1}
+
+/* ---------- services: 3D carousel ---------- */
+.mm-svcs{position:relative;overflow:hidden;background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+/* the stage is clipped left/right at the section edges; the padding leaves room above/below for scale + shadows */
+.mm-svc-clip{position:relative;overflow:hidden;contain:paint;padding:40px 0 100px;margin:8px 0 -52px}
+.mm-svc-3d{position:relative;height:470px;perspective:1300px;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-y}
+.mm-svc-3d:active{cursor:grabbing}
+.mm-svc-deck{position:absolute;inset:0;transform-style:preserve-3d}
+.mm-svc{position:absolute;left:50%;top:20px;width:320px;height:430px;margin-left:-160px;border-radius:26px;padding:32px;text-align:start;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;
+  transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .6s ease,filter .6s ease,box-shadow .6s ease}
+.mm-svc-num{font-family:'Minto Head',sans-serif;font-size:64px;line-height:1;opacity:.9;flex:none}
+.mm-svc-title{font-family:'Minto Head',sans-serif;font-size:30px;line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere}
+.mm-svc-short{font-size:14px;line-height:1.45;opacity:.85;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:6;line-clamp:6;overflow:hidden}
+.mm-svc > .mm-col{min-height:0;overflow:hidden}
+.mm-svc-head{padding-top:130px}
+.mm-svc-ctrl{display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;padding-bottom:130px}
+.mm-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;min-height:38px}
+.mm-tag{font-size:13px;font-weight:600;padding:8px 16px;border-radius:999px;border:1px solid var(--line2);color:var(--muted);animation:mm-tagin .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes mm-tagin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.mm-svc-nav{display:flex;align-items:center;gap:22px;direction:ltr}
+.mm-ar .mm-svc-nav .mm-rtl{transform:none} /* the cards run left to right in Arabic too, so the arrows do as well */
+.mm-dots{display:flex;gap:8px;align-items:center}
+.mm-sdot{height:10px;border-radius:999px;border:0;padding:0;cursor:pointer;transition:width .3s ease,background .3s ease}
+
+/* ---------- work ---------- */
+.mm-work{background:var(--bg);overflow:hidden}
+.mm-feat{position:relative;display:block;height:620px;border-radius:28px;overflow:hidden;text-decoration:none;color:#ffffff}
+.mm-feat:hover{color:#ffffff}
+.mm-featbar{position:absolute;left:0;right:0;bottom:0;padding:40px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;background:#050B16cc}
+.mm-badge{align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:#F68B1F;color:#0E1B33;padding:7px 14px;border-radius:999px}
+.mm-feat-title{font-family:'Minto Head',sans-serif;font-size:56px;line-height:1;text-transform:uppercase}
+.mm-arrow{width:64px;height:64px;flex:none;border-radius:999px;border:1px solid #ffffff;display:flex;align-items:center;justify-content:center;transition:background .3s ease,color .3s ease}
+.mm-bento{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:150px;gap:20px}
+.mm-g1{grid-column:1 / 5;grid-row:1 / 4}
+.mm-g2{grid-column:5 / 7;grid-row:1 / 3}
+.mm-g3{grid-column:5 / 7;grid-row:3 / 6}
+.mm-g4{grid-column:1 / 3;grid-row:4 / 6}
+.mm-g5{grid-column:3 / 5;grid-row:4 / 6}
+/* fewer than five projects: keep the wall closed */
+.mm-bn1 .mm-g1{grid-column:1 / 7}
+.mm-bn2 .mm-g2{grid-row:1 / 4}
+.mm-bn3 .mm-g1{grid-row:1 / 5}.mm-bn3 .mm-g3{grid-row:3 / 5}
+.mm-bn4 .mm-g4{grid-column:1 / 5}
+.mm-bcard{position:relative;display:block;border-radius:24px;overflow:hidden;text-decoration:none}
+.mm-bcard .mm-view{position:absolute;top:20px;inset-inline-end:20px;z-index:2;background:#ffffff;color:#0E1B33;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:10px 16px;border-radius:999px}
+.mm-bcap{position:absolute;z-index:1;inset-inline-start:24px;inset-inline-end:24px;bottom:22px;display:flex;flex-direction:column;gap:4px}
+.mm-g1 .mm-bcap{inset-inline-start:28px;bottom:26px;gap:6px}
+.mm-btitle{font-family:'Minto Head',sans-serif;text-transform:uppercase;line-height:1}
+.mm-shade{position:absolute;inset:0;z-index:1;background:linear-gradient(to top,rgba(5,11,22,.78),rgba(5,11,22,0) 60%);pointer-events:none}
+
+/* ---------- client logos band ---------- */
+.mm-trust{background:var(--bg);padding:0}
+.mm-trust-head{display:flex;align-items:center;gap:20px}
+/* "Trusted by": bigger, with room between it and the logo bar (.mm-trust .mm-trust-head so .mm-wrap's margin can't undo it) */
+.mm-trust .mm-trust-head{margin-bottom:40px}
+.mm-trust .mm-trust-head .mm-eyebrow{font-size:26px}
+.mm-logobar{background:var(--band);color:var(--bandfg);border-top:1px solid var(--bandline);border-bottom:1px solid var(--bandline);overflow:hidden;padding:44px 0;transition:background .4s ease,color .4s ease}
+.mm-logos{display:flex;width:max-content;gap:48px;align-items:center}
+.mm-logoitem{display:flex;align-items:center;gap:48px;font-size:18px;font-weight:700;white-space:nowrap}
+.mm-clogo{width:240px;height:120px;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
+.mm-clogo img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.mm-cname{font-size:22px;font-weight:800;text-align:center;white-space:normal;line-height:1.2}
+.mm-sym{display:block;width:38px;height:40px;object-fit:contain}
+
+/* ---------- testimonials ---------- */
+.mm-testi{background:var(--bg);border-top:1px solid var(--line);overflow:hidden;overflow:clip}
+.mm-testi-in{display:flex;flex-wrap:wrap;align-items:center;gap:48px 56px}
+.mm-testi-row{flex:1 1 640px;min-width:0;display:flex;align-items:center;gap:36px}
+.mm-testi-head{flex:0 1 400px;display:flex;flex-direction:column;gap:20px;min-width:0;position:relative;z-index:3} /* above the cards: a card flying away passes under the heading */
+.mm-testi-row .mm-tquote{font-size:28px}
+.mm-tnav{display:flex;align-items:center;gap:14px;margin-top:16px}
+.mm-tbtn{width:56px;height:56px;border-radius:999px;border:1px solid var(--line2);background:var(--card);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .25s ease,color .25s ease,border-color .25s ease}
+.mm-tbtn:hover{background:#F68B1F;border-color:#F68B1F;color:#0E1B33}
+.mm-tbtn.mm-hot{border:0;background:#F68B1F;color:#0E1B33}
+.mm-tbtn.mm-hot:hover{background:#0E1B33;color:#ffffff}
+.mm-dark .mm-tbtn.mm-hot:hover{background:#ffffff;color:#0E1B33}
+/* the floating 3D deck */
+.mm-tstage{flex:1 1 0;min-width:0;perspective:1400px;touch-action:pan-y;user-select:none;-webkit-user-select:none;padding:40px 84px 40px 0;--dx:22px;--dy:22px;--s:1}
+.mm-ar .mm-tstage{padding:40px 0 40px 84px;--s:-1}
+.mm-tfloat{animation:mm-tfloat 7s ease-in-out infinite}
+@keyframes mm-tfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.mm-tcard{position:relative;transform-style:preserve-3d;transform:rotateX(var(--rx,5deg)) rotateY(var(--ry,-7deg));transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.mm-ar .mm-tcard{transform:rotateX(var(--rx,5deg)) rotateY(var(--ry,7deg))}
+.mm-tdeck{display:grid;transform-style:preserve-3d}
+.mm-tc{grid-area:1 / 1;margin:0;position:relative;border-radius:32px;padding:76px 56px 48px;background:linear-gradient(150deg,var(--bg) 0%,var(--card) 100%);border:1px solid var(--line2);transform-origin:50% 60%;transition:transform .9s cubic-bezier(.2,.8,.2,1),background .7s ease,box-shadow .7s ease,border-color .7s ease;box-shadow:0 30px 60px -36px rgba(0,0,0,.45)}
+.mm-tcin{display:flex;flex-direction:column;gap:32px;transition:opacity .45s ease}
+.mm-tc:not(.mm-off0) .mm-tcin,.mm-tc:not(.mm-off0) .mm-tshine{opacity:0}
+.mm-off0{transform:translate3d(0,0,0);box-shadow:0 50px 90px -40px rgba(11,74,148,.55),0 20px 40px -24px rgba(0,0,0,.45)}
+.mm-off0 .mm-tcin{transition-delay:.35s}
+.mm-off1{transform:translate3d(calc(var(--s)*var(--dx)),var(--dy),-60px) rotate(calc(var(--s)*2.5deg))}
+.mm-off2{transform:translate3d(calc(var(--s)*var(--dx)*2),calc(var(--dy)*2),-120px) rotate(calc(var(--s)*5deg))}
+.mm-off3{transform:translate3d(calc(var(--s)*var(--dx)*3),calc(var(--dy)*3),-180px) rotate(calc(var(--s)*7.5deg))}
+/* the front card flies out and slides in at the back (and the other way for "previous") */
+@keyframes mm-dealA{0%{transform:translate3d(0,0,0)}42%{transform:translate3d(0,-125%,80px) rotate(calc(var(--s)*-4deg))}100%{transform:translate3d(calc(var(--s)*var(--dx)*3),calc(var(--dy)*3),-180px) rotate(calc(var(--s)*7.5deg))}}
+@keyframes mm-dealB{0%{transform:translate3d(0,0,0)}42%{transform:translate3d(0,-125%,80px) rotate(calc(var(--s)*-4deg))}100%{transform:translate3d(calc(var(--s)*var(--dx)*3),calc(var(--dy)*3),-180px) rotate(calc(var(--s)*7.5deg))}}
+@keyframes mm-backA{0%{transform:translate3d(calc(var(--s)*var(--dx)*3),calc(var(--dy)*3),-180px) rotate(calc(var(--s)*7.5deg))}55%{transform:translate3d(0,-125%,80px) rotate(calc(var(--s)*-4deg))}100%{transform:translate3d(0,0,0)}}
+@keyframes mm-backB{0%{transform:translate3d(calc(var(--s)*var(--dx)*3),calc(var(--dy)*3),-180px) rotate(calc(var(--s)*7.5deg))}55%{transform:translate3d(0,-125%,80px) rotate(calc(var(--s)*-4deg))}100%{transform:translate3d(0,0,0)}}
+.mm-dealA{animation:mm-dealA 1.1s cubic-bezier(.45,.05,.25,1) both}
+.mm-dealB{animation:mm-dealB 1.1s cubic-bezier(.45,.05,.25,1) both}
+.mm-backA{animation:mm-backA 1.1s cubic-bezier(.45,.05,.25,1) both}
+.mm-backB{animation:mm-backB 1.1s cubic-bezier(.45,.05,.25,1) both}
+.mm-tq{position:absolute;top:-42px;inset-inline-start:48px;z-index:9;width:88px;height:88px;border-radius:50%;background:#F68B1F;color:#0E1B33;display:flex;align-items:center;justify-content:center;font-family:'Minto Head',sans-serif;font-size:110px;line-height:1;padding-top:44px;box-shadow:0 18px 30px -12px rgba(246,139,31,.7);transform:translateZ(90px);overflow:hidden}
+.mm-tshine{position:absolute;inset:0;border-radius:32px;pointer-events:none;background:radial-gradient(circle at var(--mx,30%) var(--my,20%),rgba(255,255,255,.22),transparent 45%);transition:opacity .45s ease}
+.mm-tquote{margin:0;font-size:38px;line-height:1.3;font-weight:600}
+.mm-tfig{display:flex;align-items:center;gap:16px}
+.mm-tav{position:relative;overflow:hidden;flex:none;width:60px;height:60px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)}
+.mm-tav img{width:100%;height:100%;object-fit:cover;display:block}
+.mm-tbars{margin-top:110px;display:flex;gap:10px}
+.mm-tbar{flex:1;height:44px;border:0;padding:0;background:transparent;cursor:pointer;display:flex;align-items:center}
+.mm-tbar > span{display:block;width:100%;height:3px;border-radius:999px;transition:background .3s ease}
+.mm-tcx{opacity:0;pointer-events:none}
+.mm-tc::after{content:"";position:absolute;inset:0;border-radius:32px;background:#0E1B33;opacity:0;pointer-events:none;transition:opacity .7s ease}
+.mm-off1::after{opacity:.05}.mm-off2::after{opacity:.1}.mm-off3::after{opacity:.15}
+.mm-dark .mm-off1::after{opacity:.15}.mm-dark .mm-off2::after{opacity:.28}.mm-dark .mm-off3::after{opacity:.4}
+@keyframes mm-tfadeK{to{opacity:0}}
+.mm-dealA.mm-tfade{animation:mm-dealA 1.1s cubic-bezier(.45,.05,.25,1) both,mm-tfadeK .35s ease 1.05s both}
+.mm-dealB.mm-tfade{animation:mm-dealB 1.1s cubic-bezier(.45,.05,.25,1) both,mm-tfadeK .35s ease 1.05s both}
+/* the video panel (desktop: under the heading, next to the deck) */
+
+/* ---------- our story: pinned timeline ---------- */
+.mm-hist{position:relative;height:var(--h,1700px);background:var(--bg2);border-top:1px solid var(--line)}
+.mm-pin{position:sticky;top:0;height:100vh;min-height:640px;max-height:920px;overflow:hidden;display:flex;align-items:center}
+.mm-hist0{height:auto}
+.mm-hist0 .mm-pin{position:relative;height:auto;min-height:0;max-height:none;padding:130px 0}
+.mm-pin-in{width:100%;display:flex;flex-direction:column;gap:64px}
+.mm-fromday{display:flex;flex-wrap:wrap;gap:0 .28em;align-items:baseline;font-family:'Minto Head',sans-serif;font-size:46px;line-height:1.05;letter-spacing:-.01em}
+.mm-tl{position:relative}
+.mm-tlbar{position:absolute;inset-inline-start:0;inset-inline-end:116px;top:34px;height:4px;border-radius:999px;background:var(--line);overflow:hidden}
+/* the infinity sign the line ends in (mirrored in Arabic, so the line runs into it from the other side) */
+.mm-tlinf{position:absolute;inset-inline-end:0;top:9px;width:122px;height:55px;overflow:visible}
+.mm-ar .mm-tlinf{transform:scaleX(-1)}
+.mm-tlinf path{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.mm-tlinf .ink{stroke:#F68B1F;stroke-dasharray:1;stroke-dashoffset:1}
+.mm-tlbar > div{height:100%;width:0;border-radius:999px;background:#F68B1F;transition:width .35s linear}
+.mm-tlgrid{position:relative;display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:24px}
+.mm-ms{display:flex;flex-direction:column;gap:16px;min-width:0;transition:opacity .6s ease,transform .8s cubic-bezier(.34,1.45,.64,1)}
+.mm-msnum{width:72px;height:72px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-family:'Minto Head',sans-serif;font-size:24px;border:6px solid var(--bg2);transition:box-shadow .4s ease}
+.mm-msyear{font-family:'Minto Head',sans-serif;font-size:48px;line-height:1;color:#F68B1F;overflow-wrap:anywhere}
+.mm-mstitle{font-size:22px;font-weight:800}
+.mm-mstext{font-size:16px;line-height:1.6;color:var(--muted)}
+
+/* ---------- news ---------- */
+.mm-news{background:var(--bg);overflow:hidden}
+.mm-newsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
+.mm-ncard{text-decoration:none;color:var(--fg);display:flex;flex-direction:column;gap:18px}
+.mm-ncard:hover{color:var(--fg)}
+.mm-nimg{position:relative;display:block;height:270px;border-radius:22px;overflow:hidden}
+.mm-nmeta{display:flex;gap:12px;align-items:center;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.mm-ntag{padding:6px 12px;border-radius:999px}
+.mm-ntitle{font-size:24px;font-weight:700;line-height:1.3}
+
+/* ---------- careers ---------- */
+.mm-careers{background:var(--bg)}
+.mm-cta{background:#F68B1F;color:#0E1B33;border-radius:32px;padding:72px 64px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:32px}
+.mm-ctabtn{display:inline-flex;align-items:center;gap:12px;text-decoration:none;background:#0E1B33;color:#ffffff;font-weight:800;font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:20px 32px;border-radius:999px;transition:transform .2s ease,box-shadow .2s ease}
+.mm-ctabtn:hover{color:#ffffff;transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(14,27,51,.8)}
+.mm-ctacount{min-width:28px;height:28px;padding:0 8px;border-radius:999px;background:#F68B1F;color:#0E1B33;display:inline-flex;align-items:center;justify-content:center;font-size:13px;letter-spacing:0}
+
+/* tablets: story stops in two columns, no pinning */
+@media (max-width:860px){
+  .mm-tlgrid{grid-template-columns:1fr 1fr !important}
+  .mm-pin{position:relative !important;height:auto !important;min-height:0 !important;max-height:none !important;padding:100px 0}
+  .mm-hist{height:auto !important}
+  .mm-tlbar,.mm-tlinf{display:none}
+  .mm-ms{opacity:1 !important;transform:none !important}
+}
+
+/* ===== PHONES ===== */
+@media (max-width:760px){
+  .mm-p130,.mm-p140{padding-top:84px;padding-bottom:84px}
+  .mm-marq{font-size:28px !important;gap:28px !important}
+  .mm-marqwrap{padding:14px 0 !important}
+  .mm-hero{height:calc(100vh - 67px);height:calc(100svh - 67px)}
+  /* intro: three small clips in a row, the middle one dropped a little */
+  .mm-intro-in{gap:48px}
+  .mm-intro-p{font-size:17px !important}
+  .mm-clips{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:10px !important}
+  .mm-clip{height:210px !important;margin-top:0 !important;padding:12px !important;font-size:11px !important;border-radius:16px !important}
+  .mm-clips > .mm-clip:nth-child(3n+2){margin-top:36px !important}
+  /* services: same 3D cards, a bit smaller; swipe to move (no arrows or dots) */
+  .mm-svc-3d{zoom:.82;cursor:default !important}
+  .mm-svc-clip{padding:30px 0 70px;margin:0 0 -40px}
+  .mm-svc-nav{display:none !important}
+  .mm-svc-ctrl{padding-bottom:84px}
+  .mm-svc-head{padding-top:84px}
+  .mm-svcs .mm-svc-badge{width:84px;height:84px}
+  .mm-svcs .mm-svc-badge img{width:30px;height:32px}
+  .mm-svcs .mm-svc-headright{gap:16px}
+  .mm-svcs .mm-svc-blob.b2{display:none}
+  /* projects: featured card, then a staggered two-column wall */
+  .mm-feat{height:440px !important;border-radius:22px !important}
+  .mm-featbar{padding:20px !important}
+  .mm-feat-title{font-size:30px !important}
+  .mm-feat .mm-arrow{width:44px !important;height:44px !important}
+  /* Our work: two columns in reading order (left, right, next row), every spot filled. Odd count: the first one is wide;
+     4: the first and the last are wide; 2: side by side */
+  .mm-bento{display:grid !important;grid-template-columns:1fr 1fr !important;grid-auto-rows:200px !important;gap:12px !important}
+  .mm-bento .mm-bcard{display:block !important;grid-column:auto !important;grid-row:auto !important;border-radius:18px !important}
+  .mm-bn1 .mm-g1,.mm-bn3 .mm-g1,.mm-bn5 .mm-g1,.mm-bn4 .mm-g1,.mm-bn4 .mm-g4{grid-column:1 / 3 !important}
+  .mm-bento .mm-view{display:none !important}
+  .mm-bento .mm-btitle{font-size:20px !important}
+  .mm-bento .mm-bmeta{font-size:11px !important}
+  .mm-bento .mm-bcap{inset-inline-start:14px !important;inset-inline-end:14px !important;bottom:14px !important}
+  /* testimonials + careers: the wide columns wrap */
+  .mm-testi-head,.mm-tstage,.mm-cta > div{flex-basis:100% !important;min-width:0 !important}
+  .mm-tquote{font-size:24px !important}
+  .mm-tstage{padding:46px 44px 20px 4px;--dx:12px;--dy:12px}
+  .mm-ar .mm-tstage{padding:46px 4px 20px 44px}
+  .mm-tc{padding:60px 22px 28px}
+  .mm-tcard{transform:rotateX(3deg) rotateY(-4deg) !important}
+  .mm-ar .mm-tcard{transform:rotateX(3deg) rotateY(4deg) !important}
+  .mm-tq{width:70px;height:70px;font-size:86px;padding-top:34px;top:-34px;inset-inline-start:24px}
+  .mm-tbars{margin-top:60px}
+  /* phones: cards and video one under the other, or only one of them (chosen in the dashboard) */
+  .mm-testi-row{flex-direction:column;gap:32px !important}
+  .mm-treel{width:min(300px,78%) !important;margin-inline:auto}
+  .mm-tmode-cards .mm-treel{display:none !important}
+  .mm-tmode-video .mm-tstage,.mm-tmode-video .mm-tnav{display:none !important}
+  .mm-testi .mm-tnav{display:none !important} /* phones swipe the cards, so no arrow buttons */
+  /* client band */
+  .mm-logobar{padding:26px 0 !important}
+  .mm-trust .mm-trust-head{margin-bottom:24px}
+  .mm-trust .mm-trust-head .mm-eyebrow{font-size:20px}
+  .mm-clogo{width:150px !important;height:76px !important}
+  .mm-cname{font-size:16px}
+  /* story: vertical timeline, everything visible */
+  .mm-pin{padding:84px 0 !important}
+  /* the vertical line comes down into the middle of a flat infinity sign, drawn in one go when it comes into view */
+  .mm-tl{padding-bottom:56px}
+  .mm-tlinf{display:block;top:auto;bottom:4px;inset-inline-start:-2px;inset-inline-end:auto;width:76px;height:34px;transform:none !important}
+  .mm-tlinf .ink{transition:stroke-dashoffset 1.6s cubic-bezier(.65,0,.35,1)}
+  .mm-tl::before{content:"";position:absolute;inset-inline-start:34px;top:10px;bottom:21px;width:4px;border-radius:4px;background:linear-gradient(#F68B1F,var(--line))}
+  .mm-tlgrid{grid-template-columns:1fr !important;gap:34px !important}
+  .mm-ms{display:grid !important;grid-template-columns:72px 1fr;column-gap:18px;row-gap:4px !important;align-items:start}
+  .mm-ms > span:first-child{grid-row:1 / 4}
+  .mm-msyear{font-size:32px !important}
+  .mm-fromday{font-size:30px !important}
+  .mm-pin-in{gap:44px}
+  /* careers */
+  .mm-cta{padding:40px 24px !important;border-radius:24px !important}
+  .mm-careers .mm-wrap{padding-bottom:84px !important}
+  .mm-news .mm-newsgrid{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  .mm-tfloat,.mm-tvplay > span::after,.mm-tag{animation:none !important}
+  .mm-tcard,.mm-tc,.mm-svc,.mm-pill > span,.mm-ms,.mm-tlbar > div{transition:none !important}
+  .mm-pn-ico{animation:none !important}
+  .mm-dealA,.mm-dealB,.mm-backA,.mm-backB{animation:none !important}
+}
+.mm-ar .mm-tq{font-family:'Minto Head',sans-serif !important}
+
+/* ---------- testimonials reel (one shared video beside the cards) ---------- */
+.mm-treel{position:relative;flex:none;width:clamp(210px,18vw,270px);margin-top:24px}
+.mm-treel-frame{position:relative;aspect-ratio:9 / 16;max-height:640px;border-radius:30px;overflow:hidden;background:linear-gradient(150deg,#0B4A94,#050B16);border:1px solid var(--line2);box-shadow:0 40px 70px -40px rgba(0,0,0,.6)}
+.mm-treel-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#050B16}
+.mm-treel-snd{position:absolute;bottom:16px;inset-inline-end:16px;width:44px;height:44px;border-radius:999px;border:0;cursor:pointer;background:rgba(5,11,22,.62);color:#ffffff;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:background .25s ease,color .25s ease}
+.mm-treel-snd:hover,.mm-treel-snd[aria-pressed="true"]{background:#F68B1F;color:#0E1B33}
+@media (max-width:1100px){ .mm-testi-head{flex-basis:100%} .mm-testi-row{flex-basis:100%} }
+.mm-treel-ph{position:absolute;inset:0;display:flex;align-items:flex-end;padding:20px;font-size:14px;color:#9FB8D9}
+
+
+/* the Minto logo on top of the testimonials video: white disc so both colours of the symbol show */
+.mm-tbadge{position:absolute;top:-30px;inset-inline-start:-30px;width:104px;height:104px;border-radius:50%;background:#ffffff;display:flex;align-items:center;justify-content:center;box-shadow:0 18px 34px -14px rgba(5,11,22,.55);animation:mm-tfloatb 4s ease-in-out infinite alternate}
+.mm-tbadge img{width:58px;height:62px;object-fit:contain}
+@keyframes mm-tfloatb{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-6px) rotate(3deg)}}
+@media (prefers-reduced-motion:reduce){ .mm-tbadge,.mm-hero-badge,.mm-hero-badge svg{animation:none} }
+
+.mm-svc-sub{margin:0;max-width:560px;font-size:21px;line-height:1.5;color:var(--muted)}
+/* Our services scroll intro (computers): the section holds still under the nav while the heading block moves from
+   the middle to its place. overflow:clip (not hidden) so position:sticky works; tighter spacing so it fits a screen. */
+.mm-svc-pinned{overflow:clip}
+.mm-svc-pinned .mm-svc-track{position:relative}
+.mm-svc-pinned .mm-svc-stick{position:sticky;overflow:hidden}
+.mm-svc-pinned .mm-svc-fit{position:relative;transform-origin:top center}
+.mm-svc-pinned .mm-svc-head{padding-top:44px}
+.mm-svc-pinned .mm-svc-clip{padding:16px 0 56px;margin:0 0 -40px;overflow:visible;contain:none} /* the side cards run to the screen edges (the pinned box clips at the real screen width; when the section is scaled down to fit a short phone, the strip itself is narrower than the screen) */
+.mm-svc-pinned .mm-svc-ctrl{padding-bottom:28px}
+/* ---- Our services, playful touches ---- */
+.mm-svcs .mm-svc-head,.mm-svcs .mm-svc-clip,.mm-svcs .mm-svc-ctrl{position:relative;z-index:1}
+/* squiggle under the title: draws itself when the section comes into view */
+.mm-squiggle{width:min(340px,60%);height:auto;margin-top:-6px;overflow:visible}
+.mm-squiggle path{fill:none;stroke:#F68B1F;stroke-width:6;stroke-linecap:round;stroke-dasharray:420;stroke-dashoffset:420;transition:stroke-dashoffset 1.3s cubic-bezier(.65,0,.35,1) .35s}
+.mm-squiggle.on path{stroke-dashoffset:0}
+/* round sticker with text turning around the Minto symbol */
+.mm-svc-headright{display:flex;align-items:center;gap:28px}
+.mm-svc-badge{position:relative;flex:none;width:118px;height:118px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px -18px rgba(14,27,51,.55);transform:rotate(-8deg)}
+.mm-svc-badge img{width:40px;height:42px;object-fit:contain}
+/* phones: the spinning badge in the middle of the hero, over the video (instead of the MINTO outline) */
+.mm-hero-badge{position:absolute;left:50%;top:50%;z-index:2;width:230px;height:230px;margin:-115px 0 0 -115px;border-radius:50%;background:rgba(14,27,51,.55);animation:mm-hb-in .6s ease both}
+.mm-hero-badge svg{position:absolute;inset:0;width:100%;height:100%;animation:mm-spin 14s linear infinite}
+.mm-hero-badge text{font:800 15px 'Minto Head',sans-serif;letter-spacing:.14em;fill:#ffffff}
+.mm-hero-badge img{position:absolute;left:50%;top:50%;width:84px;height:88px;margin:-44px 0 0 -42px;object-fit:contain}
+@keyframes mm-hb-in{from{opacity:0}to{opacity:1}}
+.mm-svc-badge-ring{position:absolute;inset:0;width:100%;height:100%;animation:mm-spin 16s linear infinite}
+.mm-svc-badge-ring text{font-family:'Minto Head',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;fill:var(--fg)}
+@keyframes mm-spin{to{transform:rotate(360deg)}}
+/* the cards: softer corners, the number in a pill, a big faint icon that tilts in on the active card */
+.mm-svcs .mm-svc{border-radius:34px;overflow:hidden}
+.mm-svcs .mm-svc-num{align-self:flex-start;font-size:17px;letter-spacing:.06em;padding:7px 16px;border:2px solid currentColor;border-radius:999px;opacity:1}
+.mm-svc-ico{position:absolute;right:-26px;bottom:-30px;width:190px;height:190px;opacity:.14;transform:rotate(-14deg);transition:transform .7s cubic-bezier(.34,1.56,.64,1),opacity .4s ease;pointer-events:none}
+.mm-svc-ico svg{width:100%;height:100%}
+.mm-svc[aria-hidden]:not([aria-hidden="false"]) .mm-svc-ico{opacity:0}
+.mm-svc:hover .mm-svc-ico{transform:rotate(-4deg) scale(1.06);opacity:.2}
+/* soft brand shapes floating behind */
+.mm-svc-blob{position:absolute;z-index:0;pointer-events:none;opacity:.22;animation:mm-blob 9s ease-in-out infinite alternate}
+.mm-svc-blob.b1{top:90px;left:42%;width:150px;height:150px;border-radius:50%;background:#F68B1F}
+.mm-svc-blob.b2{top:46%;right:-40px;width:260px;height:90px;border-radius:999px;background:#0082c4;transform:rotate(-18deg);animation-duration:11s}
+.mm-svc-blob.b3{bottom:120px;left:-30px;width:130px;height:130px;border-radius:50%;border:18px solid #5acee9;opacity:.3;animation-duration:13s}
+@keyframes mm-blob{from{translate:0 0}to{translate:24px -30px}}
+@media (prefers-reduced-motion:reduce){
+  .mm-svc-badge-ring,.mm-svc-blob{animation:none}
+  .mm-squiggle path{stroke-dashoffset:0;transition:none}
+}
+
+/* computers: what the testimonials area shows (chosen in the dashboard) */
+@media (min-width:761px){
+  .mm-tdesk-cards .mm-treel{display:none}
+  .mm-tdesk-video .mm-tstage,.mm-tdesk-video .mm-tnav{display:none}
+  .mm-tdesk-video .mm-testi-row{justify-content:center}
+  .mm-tdesk-video .mm-treel{width:clamp(260px,24vw,340px)}
+}

@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "web/dist",
+  "functions": { "api/index.ts": { "maxDuration": 15, "includeFiles": "server/migrations/**" } },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/robots.txt", "destination": "/api" },
+    { "source": "/sitemap.xml", "destination": "/api" },
+    { "source": "/((?!assets/|favicon|.*\\.(?:png|jpg|jpeg|svg|webp|ico|mp4|txt|xml|woff2|woff|ttf)$).*)", "destination": "/index.html" }
+  ]
+}

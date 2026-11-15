@@ -1,0 +1,9 @@
+node_modules/
+web/dist/
+server/dist/
+server/uploads/
+.env
+.vercel
+
+# the site's media (videos, client logos, hero) lives on Cloudflare R2: upload with npm run media:upload
+web/public/media/

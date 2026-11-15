@@ -1,0 +1,249 @@
+/* ===== Minto Media — public site styles (ported from the Claude Design pages) ===== */
+/* ===== Brand fonts (from the brand guide) =====
+   English: Typo Round (Light for text, Bold for headings) · Arabic: Expo Arabic (Book / Bold).
+   Put the licensed files in web/public/fonts with these names and they are used automatically:
+     TypoRound-Light.woff2, TypoRound-Bold.woff2, ExpoArabic-Book.woff2, ExpoArabic-Bold.woff2
+   Until then the closest free fonts are used: Quicksand (rounded, like Typo Round) and Tajawal (like Expo Arabic). */
+@font-face{font-family:'Minto Sans';src:url('/fonts/TypoRound-Light.woff2') format('woff2'),url('/fonts/Quicksand-Medium.woff2') format('woff2');font-weight:100 599;font-display:swap}
+@font-face{font-family:'Minto Sans';src:url('/fonts/TypoRound-Bold.woff2') format('woff2'),url('/fonts/Quicksand-Bold.woff2') format('woff2');font-weight:600 900;font-display:swap}
+@font-face{font-family:'Minto Head';src:url('/fonts/TypoRound-Bold.woff2') format('woff2'),url('/fonts/Quicksand-Bold.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Minto Arabic';src:url('/fonts/ExpoArabic-Book.woff2') format('woff2'),url('/fonts/Tajawal-Medium.woff2') format('woff2');font-weight:100 599;font-display:swap}
+@font-face{font-family:'Minto Arabic';src:url('/fonts/ExpoArabic-Bold.woff2') format('woff2'),url('/fonts/Tajawal-Bold.woff2') format('woff2');font-weight:600 900;font-display:swap}
+html{scroll-behavior:smooth}
+body{margin:0;background:#ffffff}
+html[data-theme="dark"] body{background:#050B16}
+*{box-sizing:border-box}
+a{color:inherit}a:hover{color:#F68B1F}
+img,video{max-width:100%}
+::selection{background:#F68B1F;color:#0E1B33}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #F68B1F;outline-offset:4px}
+.mm-skip{position:fixed;left:12px;top:8px;transform:translateY(-200%);z-index:200;background:#F68B1F;color:#0E1B33;padding:10px 16px;border-radius:999px;font-weight:800;text-decoration:none}
+.mm-skip:focus{transform:none}
+.mm-sr{position:absolute !important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0}
+
+/* theme + language */
+.mm-theme{font-family:'Minto Sans',system-ui,sans-serif;color:var(--fg);background:var(--bg);width:100%;min-height:100vh;transition:background .4s ease,color .4s ease;overflow-x:clip}
+.mm-light{--band:#E9ECF0;--bandfg:#0E1B33;--bandline:transparent;--logofx:none;--bg:#FFFFFF;--bg2:#F1F5FA;--card:#E9EFF7;--line:#DCE4EF;--line2:#BFCDE0;--fg:#0E1B33;--muted:#3E4F68;--muted2:#56677F;--inbg:#FFFFFF;--ph:#8A9AB1;--errbg:#FFF1EE;--errfg:#9A2A1C;--dot:#BFCDE0}
+.mm-dark{--band:#0B1A30;--bandfg:#ffffff;--bandline:#1E3352;--logofx:brightness(0) invert(1);--bg:#050B16;--bg2:#081325;--card:#0B1A30;--line:#16243A;--line2:#2A4366;--fg:#ffffff;--muted:#C5D6EC;--muted2:#8FA6C6;--inbg:#0B1A30;--ph:#5E7594;--errbg:#3A1814;--errfg:#FFD3CC;--dot:#2A4366}
+.mm-flip{color:var(--fg)}
+.mm-langbtn{font-family:'Minto Arabic',sans-serif !important;font-weight:800;font-size:17px;line-height:1}
+.mm-ar,.mm-ar *{font-family:'Minto Arabic','Minto Sans',system-ui,sans-serif !important;letter-spacing:0 !important;font-style:normal !important}
+.mm-ar h1,.mm-ar h2,.mm-ar .mm-h1,.mm-ar .mm-h2{line-height:1.3 !important;font-weight:900 !important}
+.mm-ar .ln{padding-top:.06em;padding-bottom:.14em}
+.mm-ar .mm-pill{height:1.35em !important;line-height:1.35em !important}
+.mm-ar .mm-rtl{transform:scaleX(-1)}
+.mm-marq,.mm-logos,.mm-marqwrap,.mm-logobar,.mm-strip,.mm-ltr{direction:ltr}
+/* phone numbers / emails keep their left-to-right order, but in Arabic they line up on the right with the rest of the column */
+.mm-ar a.mm-ltr{text-align:right}
+.mm-ltr{unicode-bidi:isolate}
+
+/* layout helpers */
+.mm-wrap{max-width:1360px;margin:0 auto;padding-left:32px;padding-right:32px}
+.mm-sec{padding-top:150px;padding-bottom:150px}
+.mm-h2{margin:0;font-family:'Minto Head',sans-serif;font-weight:400;line-height:.95;text-transform:uppercase}
+.mm-eyebrow{font-size:17px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#F68B1F}
+.mm-more{text-decoration:none;color:var(--fg);font-weight:700;font-size:14px;letter-spacing:.12em;text-transform:uppercase;border-bottom:2px solid #F68B1F;padding-bottom:6px}
+.mm-circle{width:52px;height:52px;border-radius:999px;border:1px solid var(--line2);background:var(--card);color:var(--fg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .25s ease,color .25s ease,border-color .25s ease}
+.mm-circle:hover{background:#F68B1F;border-color:#F68B1F;color:#0E1B33}
+.mm-circle.mm-hot{background:#F68B1F;border-color:#F68B1F;color:#0E1B33}
+
+/* the "Minto Media" wordmark in the nav: the logo blue on light, white on dark */
+.mm-light .mm-brandtxt{color:#014b96}
+.mm-dark .mm-brandtxt{color:#ffffff}
+
+/* header buttons */
+.mm-hbtn{width:48px;height:48px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--fg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .25s ease,color .25s ease,border-color .25s ease}
+.mm-hbtn:hover{background:#F68B1F;border-color:#F68B1F;color:#0E1B33}
+.mm-hnav a{position:relative}
+.mm-hnav a:hover{color:#F68B1F !important}
+.mm-themebtn{width:52px;height:52px;border-radius:999px;border:1px solid #ffffff;background:transparent;color:#ffffff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .25s ease,color .25s ease}
+.mm-themebtn:hover{background:#ffffff !important;color:#0E1B33 !important}
+
+/* floating corner buttons (home page, after the hero) */
+.mm-fabs{position:fixed;top:22px;right:24px;z-index:80;display:flex;flex-direction:row;gap:12px;transition:opacity .35s ease,transform .35s cubic-bezier(.34,1.45,.64,1)}
+.mm-ar .mm-fabs{right:auto;left:24px}
+.mm-fabs.off{opacity:0;transform:scale(.6) translateY(-12px);pointer-events:none}
+.mm-fab{width:52px;height:52px;border-radius:999px;border:1px solid var(--line2);background:var(--bg);color:var(--fg);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.18);transition:background .25s ease,color .25s ease}
+.mm-fab:hover{background:#F68B1F;color:#ffffff;border-color:#F68B1F}
+
+/* menu */
+@keyframes mm-menu{from{clip-path:circle(0% at 96% 5%)}to{clip-path:circle(150% at 96% 5%)}}
+@keyframes mm-mlink{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
+.mm-menu{animation:mm-menu .8s cubic-bezier(.7,0,.2,1) both}
+.mm-mlink{display:block;animation:mm-mlink .8s cubic-bezier(.2,.9,.25,1.1) both;transition:color .25s ease,padding-inline-start .35s ease}
+.mm-mlink:hover{color:#ffffff !important;padding-inline-start:16px}
+.mm-top:hover{background:#F68B1F !important;color:#0E1B33 !important}
+
+/* scroll reveals */
+.mm-ready .rv{opacity:0;transition:opacity .8s cubic-bezier(.2,.8,.2,1),transform 1.1s cubic-bezier(.34,1.45,.64,1)}
+.mm-ready .rv-up{transform:translateY(80px)}
+.mm-ready .rv-left{transform:translateX(-140px)}
+.mm-ready .rv-right{transform:translateX(140px)}
+.mm-ready .rv-pop{transform:scale(.82) translateY(40px)}
+.mm-ready .rv.on{opacity:1;transform:none}
+.ln{display:block;overflow:hidden;padding-bottom:.04em}
+.ln > span{display:block}
+.mm-ready .ln > span{transform:translateY(110%) skewY(4deg);transition:transform 1.1s cubic-bezier(.2,.9,.25,1.15)}
+.mm-ready .ln.on > span{transform:none}
+.mm-ready .rv.seen{transition:opacity .45s ease,transform .6s cubic-bezier(.2,.8,.2,1);transition-delay:0s !important}
+.mm-ready .rv.seen:not(.on){opacity:.35;transform:translateY(22px)}
+.mm-ready .ln.seen > span{transition:transform .55s cubic-bezier(.2,.8,.2,1);transition-delay:0s !important}
+.mm-ready .ln.seen:not(.on) > span{transform:translateY(30%)}
+.mm-ready .ln.mm-slow > span{transition:transform 2.2s cubic-bezier(.16,.8,.25,1.05)}
+.mm-ready .ln.mm-slow.seen > span{transition:transform 1.1s cubic-bezier(.2,.8,.2,1)}
+
+/* cards */
+.mm-card .mm-img{transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.mm-card:hover .mm-img{transform:scale(1.06)}
+.mm-card:hover .mm-arrow{background:#F68B1F;color:#0E1B33}
+.mm-card:hover .mm-ttl{color:#F68B1F}
+.mm-ttl{transition:color .25s ease}
+.mm-chip{transition:background .25s ease,color .25s ease,border-color .25s ease}
+.mm-chip:hover{border-color:#F68B1F !important}
+.mm-view{opacity:0;transform:translateY(-10px);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.9,.25,1.2)}
+.mm-card:hover .mm-view{opacity:1;transform:none}
+.mm-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;padding:16px;text-align:center}
+
+/* back to top */
+.mm-totop{position:fixed;bottom:34px;right:64px;z-index:85;width:60px;height:60px;border-radius:999px;border:0;padding:0;background:#F68B1F;color:#0E1B33;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px -10px rgba(246,139,31,.75);transition:opacity .35s ease,transform .45s cubic-bezier(.34,1.45,.64,1),box-shadow .3s ease}
+.mm-ar .mm-totop{right:auto;left:64px}
+.mm-totop.off{opacity:0;transform:translateY(30px) scale(.6);pointer-events:none}
+.mm-totop:hover{transform:translateY(-4px);box-shadow:0 20px 36px -10px rgba(246,139,31,.9)}
+.mm-totop:hover .mm-toparr{animation:mm-toparr .8s ease-in-out infinite}
+@keyframes mm-toparr{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.mm-topring{position:absolute;top:-5px;left:-5px;width:calc(100% + 10px);height:calc(100% + 10px);transform:rotate(-90deg);overflow:visible}
+.mm-topring circle{fill:none;stroke-width:3}
+
+/* motion keyframes used across pages */
+@keyframes mm-marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes mm-logos{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes mm-cue{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+@keyframes mm-fade{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes mm-fromL{from{transform:translateX(-1500px)}to{transform:none}}
+@keyframes mm-fromR{from{transform:translateX(1500px)}to{transform:none}}
+@keyframes mm-fromT{from{transform:translateY(-950px)}to{transform:none}}
+@keyframes mm-fromB{from{transform:translateY(950px)}to{transform:none}}
+.mm-marq{animation:mm-marq 52s linear infinite}
+.mm-logos{animation:mm-logos 80s linear infinite}
+.mm-logobar:hover .mm-logos{animation-play-state:paused}
+.mm-cue{animation:mm-cue 1.8s cubic-bezier(.7,0,.3,1) 5.2s infinite both}
+.mm-fade{animation:mm-fade 1s ease .9s both}
+.mm-L{animation-duration:1.8s;animation-timing-function:cubic-bezier(.16,.84,.24,1);animation-fill-mode:both;animation-iteration-count:1}
+.mm-fromL{animation-name:mm-fromL}.mm-fromR{animation-name:mm-fromR}.mm-fromT{animation-name:mm-fromT}.mm-fromB{animation-name:mm-fromB}
+/* hero: the orange base fades away once the last letter has landed (last letter starts 1.6s, flies 1.8s) */
+@keyframes mm-basefade{to{opacity:0}}
+.mm-hero-base{animation:mm-basefade 1s ease 3.4s both}
+/* phones: each letter's orange line draws itself in (Home.tsx, phone hero) */
+.mm-Ld{stroke-dasharray:1 1;stroke-dashoffset:1;animation:mm-Ldraw 1.1s cubic-bezier(.45,0,.25,1) both}
+@keyframes mm-Ldraw{to{stroke-dashoffset:0}}
+/* while the loading screen (index.html) is up, the hero intro waits, so it plays when the site shows */
+.mm-loading .mm-L,.mm-loading .mm-hero-base,.mm-loading .mm-Ld{animation-play-state:paused}
+
+/* forms (shared by apply form and newsletter) */
+.mm-field{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:700}
+.mm-input{width:100%;font:inherit;font-weight:500;font-size:16px;color:var(--fg);background:var(--inbg);border:1px solid var(--line2);border-radius:14px;padding:14px 16px;transition:border-color .2s ease,box-shadow .2s ease}
+.mm-input::placeholder{color:var(--ph)}
+.mm-input:focus{outline:none;border-color:#F68B1F;box-shadow:0 0 0 4px rgba(246,139,31,.18)}
+.mm-input[aria-invalid="true"]{border-color:#D9534F}
+.mm-err{font-size:13px;font-weight:600;color:var(--errfg)}
+.mm-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;cursor:pointer;font:inherit;font-weight:800;font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:18px 30px;border-radius:999px;background:#F68B1F;color:#0E1B33;text-decoration:none;transition:transform .2s ease,box-shadow .2s ease,opacity .2s ease}
+.mm-btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px -12px rgba(246,139,31,.8);color:#0E1B33}
+.mm-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.mm-btn.mm-dark-btn{background:#0E1B33;color:#ffffff}
+
+/* ===== PHONES ===== */
+@media (max-width:760px){
+  .mm-wrap{padding-left:20px;padding-right:20px}
+  .mm-sec{padding-top:84px;padding-bottom:84px}
+  .mm-h2{font-size:48px !important;line-height:1 !important}
+  .mm-ar .mm-h2{line-height:1.3 !important}
+  .mm-h1{font-size:64px !important;line-height:.95 !important}
+  .mm-ar .mm-h1{font-size:52px !important;line-height:1.3 !important}
+  .mm-menu nav{font-size:46px !important}
+  .mm-hnav,.mm-hcta{display:none !important}
+  .mm-ihead > div{padding:12px 16px !important}
+  .mm-ihead .mm-hbtn{width:42px;height:42px}
+  .mm-brandtxt{height:13px !important;width:auto !important}
+  .mm-ready .rv-left{transform:translateX(-40px)}.mm-ready .rv-right{transform:translateX(40px)}.mm-ready .rv.on{transform:none}
+  #contact > div{padding:48px 20px 24px !important}
+  #contact h2{font-size:64px !important}
+  .mm-fgrid{grid-template-columns:1fr 1fr !important;gap:28px !important}
+  .mm-fabs{top:14px;right:14px;gap:8px}
+  .mm-ar .mm-fabs{left:14px}
+  .mm-fab{width:46px;height:46px}
+  .mm-totop{width:50px;height:50px;bottom:18px;right:16px}.mm-ar .mm-totop{left:16px}
+  .mm-wide{flex-basis:100% !important;min-width:0 !important}
+}
+@media (prefers-reduced-motion:reduce){
+  .mm-hero-base{opacity:0}
+  .mm-Ld{stroke-dashoffset:0}
+  .mm-marq,.mm-L,.mm-Ld,.mm-logos,.mm-hero-base,.mm-menu,.mm-mlink,.mm-cue,.mm-fade,.mm-strip{animation:none !important}
+  .mm-ready .rv,.mm-ready .ln > span{opacity:1 !important;transform:none !important;transition:none !important}
+  .mm-totop:hover .mm-toparr{animation:none}
+}
+
+/* ---------- contact page form ---------- */
+.mm-cf{display:flex;flex-direction:column;gap:22px;width:100%;max-width:860px}
+.mm-cf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.mm-cf-f{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:700;color:var(--fg)}
+.mm-cf-in{width:100%;font:inherit;font-weight:500;font-size:16px;color:var(--fg);background:var(--inbg);border:1px solid var(--line2);border-radius:14px;padding:14px 16px;transition:border-color .2s ease,box-shadow .2s ease}
+.mm-cf-in::placeholder{color:var(--ph)}
+.mm-cf-in:focus{outline:none;border-color:#F68B1F;box-shadow:0 0 0 4px rgba(246,139,31,.18)}
+.mm-cf-in[aria-invalid="true"]{border-color:#D9534F}
+textarea.mm-cf-in{resize:vertical;min-height:140px}
+.mm-cf-svc{border:0;margin:0;padding:0;min-width:0}
+.mm-cf-svc legend{padding:0;margin-bottom:10px;font-size:14px;font-weight:700;color:var(--fg)}
+.mm-cf-svc > div{display:flex;flex-wrap:wrap;gap:10px}
+.mm-cf-chip{font:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--fg);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:10px 18px;transition:background .2s ease,color .2s ease,border-color .2s ease}
+.mm-cf-chip:hover{border-color:#F68B1F}
+.mm-cf-chip.on{background:#F68B1F;border-color:#F68B1F;color:#0E1B33}
+.mm-cf-hp{position:absolute;inset-inline-start:-9999px;width:1px;height:1px;opacity:0}
+.mm-cf-fe{color:#D9534F;font-size:13px;font-weight:600}
+.mm-cf-err{margin:0;color:var(--errfg);background:var(--errbg);border-radius:12px;padding:10px 14px;font-weight:600;font-size:14px}
+.mm-cf-btn{align-self:flex-start;font:inherit;cursor:pointer;border:0;background:#F68B1F;color:#0E1B33;font-weight:800;font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:20px 34px;border-radius:999px;transition:transform .2s ease,opacity .2s ease}
+.mm-cf-btn:hover{transform:translateY(-2px)}
+.mm-cf-btn:disabled{opacity:.6;cursor:default;transform:none}
+.mm-cf-btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line2);letter-spacing:.04em;text-transform:none;font-size:15px;padding:12px 22px}
+.mm-cf-ok{gap:24px}
+.mm-cf-ok p{margin:0;font-size:28px;font-weight:700;color:var(--fg);line-height:1.5}
+@media (max-width:760px){
+  .mm-cf-grid{grid-template-columns:1fr}
+  .mm-cf-btn{align-self:stretch;text-align:center}
+}
+
+/* ---------- CV drop zone (send-your-CV page) ---------- */
+.mm-cv-drop{border:2px dashed var(--line2);border-radius:18px;padding:28px;text-align:center;color:var(--muted);transition:border-color .2s ease,background .2s ease}
+.mm-cv-drop.drag{border-color:#F68B1F;background:rgba(246,139,31,.08)}
+.mm-cv-drop[aria-invalid="true"]{border-color:#D9534F}
+.mm-cv-drop p{margin:0;font-weight:500;font-size:16px;line-height:1.8}
+.mm-cv-drop small{color:var(--muted2);font-size:13px}
+.mm-cv-pick{font:inherit;font-weight:700;color:#F68B1F;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+.mm-cv-file{display:flex;flex-direction:column;gap:8px;align-items:center;color:var(--fg)}
+.mm-cv-file span{font-size:14px;color:var(--muted)}
+
+/* contact page: details list */
+.mm-cinfo{margin:0;flex:0 1 320px;display:flex;flex-direction:column;gap:28px}
+.mm-cinfo dt{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#F68B1F;margin-bottom:6px}
+.mm-cinfo dd{margin:0;font-size:20px;font-weight:600;line-height:1.4}
+.mm-cinfo a{color:var(--fg);text-decoration:none;border-bottom:1px solid var(--line2)}
+.mm-cinfo a:hover{border-color:#F68B1F}
+
+/* phones: blocks slide in from the sides while scrolling (one from the right, the next from the left), and slide out
+   again when you scroll back up past them, so they replay. They start 70% of their own width to the side, so a part
+   stays on screen and the scroll watcher still sees them. Classes set in useReveal (Shell.tsx). */
+@media (max-width:760px) and (prefers-reduced-motion:no-preference){
+  .mm-ready .rv.mm-slideL,.mm-ready .rv.mm-slideR{transition:opacity .7s ease,transform .95s cubic-bezier(.16,1,.3,1)}
+  .mm-ready .rv.mm-slideR:not(.on){opacity:0;transform:translateX(70%) rotate(4deg)}
+  .mm-ready .rv.mm-slideL:not(.on){opacity:0;transform:translateX(-70%) rotate(-4deg)}
+  .mm-ready .rv.mm-slideL.on,.mm-ready .rv.mm-slideR.on{opacity:1;transform:none}
+}
+
+/* very narrow phones (under 380px): smaller header buttons and brand name so nothing overlaps; under 330px only the symbol */
+@media (max-width:379px){
+  .mm-ihead > div{gap:8px !important;padding:12px 12px !important}
+  .mm-ihead .mm-hbtn{width:38px;height:38px}
+  .mm-ihead > div > span{gap:6px !important}
+  .mm-ihead > div > a{gap:8px !important;min-width:0}
+  .mm-brandtxt{height:11px !important}
+}
+@media (max-width:329px){ .mm-brandtxt{display:none !important} }

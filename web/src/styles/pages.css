@@ -1,0 +1,161 @@
+/* ===== Inner pages: Work, News, News post, Careers, Job (ported from the Claude Design pages) ===== */
+
+/* coloured placeholder block (no image yet) with a faint Minto mark */
+.pg-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.pg-ph img{width:54px;height:58px;object-fit:contain;filter:brightness(0) invert(1);opacity:.2}
+
+/* shared filter chips row */
+.pg-chip{height:44px;padding:0 18px;border-radius:999px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.pg-ghost{height:56px;padding:0 32px;border-radius:999px;border:1px solid #F68B1F;background:transparent;color:var(--fg);font-family:inherit;font-size:14px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .25s ease,color .25s ease}
+.pg-ghost:hover{background:#F68B1F;color:#0E1B33}
+.pg-back{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;text-decoration:none;font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
+.pg-back:hover{color:#F68B1F}
+
+/* entrance used on pages that open above the fold */
+@keyframes mm-rise{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+.mm-rise{animation:mm-rise .9s cubic-bezier(.2,.9,.25,1.1) both}
+
+/* ---------- WORK ---------- */
+.mm-wall{display:flex;align-items:flex-start;gap:18px;perspective:1600px}
+.mm-wcol{flex:1 1 0;min-width:0}
+.mm-tile{position:relative;display:block;width:100%;break-inside:avoid;margin:0 0 18px;border:0;padding:0;border-radius:20px;overflow:hidden;cursor:zoom-in;background:none;font-family:inherit;text-align:start;color:#ffffff}
+.mm-tile .mm-img{position:absolute;inset:0;transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
+/* entrance: the boxes themselves fly in, each with its own side, turn and a little bounce */
+.mm-ready .mm-tile.rv{opacity:0;transform:translate3d(var(--fx,0),var(--fy,120px),-160px) rotate(var(--tr,0deg)) rotateX(var(--rx,18deg)) scale(.8);transition:opacity .6s ease,transform 1.15s cubic-bezier(.2,.95,.25,1.15);transition-delay:var(--td,0s)}
+.mm-ready .mm-tile.rv.on{opacity:1;transform:none}
+.mm-ready .mm-tile.rv.seen:not(.on){opacity:.3;transform:translateY(40px) scale(.95)}
+.mm-ready .mm-tile.rv.seen{transition-delay:0s}
+.mm-tinfo,.mm-play{z-index:3}
+.mm-tile:hover .mm-img{transform:scale(1.07)}
+.mm-tinfo{position:absolute;left:0;right:0;bottom:0;padding:16px 16px 14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;background:linear-gradient(transparent,rgba(5,11,22,.82));opacity:0;transform:translateY(10px);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.9,.25,1.2)}
+.mm-tile:hover .mm-tinfo,.mm-tile:focus-visible .mm-tinfo{opacity:1;transform:none}
+.mm-play{position:absolute;top:14px;inset-inline-end:14px;height:34px;padding:0 12px 0 10px;border-radius:999px;background:rgba(5,11,22,.6);backdrop-filter:blur(6px);display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#ffffff}
+@keyframes mm-lb{from{opacity:0}to{opacity:1}}
+@keyframes mm-lbi{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+.mm-lb{animation:mm-lb .3s ease both}
+.mm-lbi{animation:mm-lbi .45s cubic-bezier(.2,.9,.25,1.15) both}
+.mm-lbbtn{width:56px;height:56px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.06);color:#ffffff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .25s ease}
+.mm-lbbtn:hover{background:#F68B1F;border-color:#F68B1F;color:#0E1B33}
+.mm-shuffle svg{transition:transform .6s cubic-bezier(.2,.9,.25,1.2)}
+.mm-shuffle:hover svg{transform:rotate(180deg)}
+.mm-stat{font-family:'Minto Head',sans-serif;font-size:64px;line-height:1;color:#F68B1F}
+.wk-tools{position:sticky;top:81px;z-index:30}
+
+/* ---------- NEWS ---------- */
+.nw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:56px 24px}
+.nw-nlin{flex:1 1 240px;height:58px;border-radius:999px;border:2px solid #0E1B33;background:#FFF4E8;padding:0 24px;font-family:inherit;font-size:16px;color:#0E1B33}
+.nw-nlin::placeholder{color:#7A6650}
+.nw-nlin:focus-visible{outline:3px solid #0E1B33;outline-offset:3px}
+.nw-body p{margin:0}
+.nw-share{height:50px;padding:0 22px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--fg);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .25s ease}
+.nw-share:hover{border-color:#F68B1F}
+
+/* ---------- CAREERS ---------- */
+.mm-role{transition:background .25s ease}
+.mm-role:hover{background:var(--card)}
+@keyframes mm-strip{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mm-strip{animation:mm-strip 45s linear infinite}
+@keyframes mm-open{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+.mm-open{animation:mm-open .45s cubic-bezier(.2,.9,.25,1.1) both}
+.mm-ar .mm-role{text-align:right !important}
+
+/* ---------- JOB + APPLY ---------- */
+.mm-in{width:100%;height:56px;border-radius:14px;border:1px solid var(--line2);background:var(--inbg);color:var(--fg);padding:0 18px;font-family:inherit;font-size:16px;transition:border-color .2s ease,box-shadow .2s ease}
+.mm-in::placeholder{color:var(--ph)}
+.mm-in:focus{outline:none;border-color:#F68B1F;box-shadow:0 0 0 3px #F68B1F40}
+.mm-in[aria-invalid="true"]{border-color:#E5553F}
+textarea.mm-in{height:160px;padding:16px 18px;resize:vertical;line-height:1.5}
+.mm-lbl{font-size:14px;font-weight:700;color:var(--fg)}
+.mm-lbl .pg-opt{font-weight:500;color:var(--muted2)}
+.mm-drop{transition:border-color .2s ease,background .2s ease}
+.mm-drop:hover{border-color:#F68B1F !important}
+.mm-check:focus-visible{outline:3px solid #F68B1F;outline-offset:3px}
+.jb-pill{min-height:46px;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;cursor:pointer}
+.jb-pill:focus-within{outline:3px solid #F68B1F;outline-offset:3px}
+.jb-pills[aria-invalid="true"] .jb-pill{border-color:#E5553F !important}
+.jb-tab{height:72px;padding:0 22px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:color .25s ease,border-color .25s ease}
+.jb-tab:hover{color:var(--fg) !important}
+.jb-sec{display:flex;flex-direction:column;gap:16px}
+.jb-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px;font-size:18px;line-height:1.6;color:var(--muted)}
+.jb-list li{display:flex;gap:14px}
+@keyframes mm-tab{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes mm-tabr{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+.mm-tabin{animation:mm-tab .6s cubic-bezier(.2,.9,.25,1.1) both}
+.mm-ar .mm-tabin{animation-name:mm-tabr}
+@keyframes mm-pop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.mm-popin{animation:mm-pop .7s cubic-bezier(.2,.9,.25,1.2) .2s both}
+@keyframes jb-bar{from{background-position:0 0}to{background-position:40px 0}}
+.jb-bar{height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+.jb-bar > span{display:block;height:100%;border-radius:999px;background:repeating-linear-gradient(45deg,#F68B1F 0 10px,#FFA54D 10px 20px);background-size:40px 100%;animation:jb-bar .8s linear infinite;transition:width .2s ease}
+@keyframes jb-spin{to{transform:rotate(360deg)}}
+.jb-spin{width:18px;height:18px;border-radius:999px;border:2.5px solid currentColor;border-right-color:transparent;animation:jb-spin .7s linear infinite}
+.mm-ar legend,.mm-ar .mm-jh2{line-height:1.4 !important}
+
+/* ===== PHONES ===== */
+@media (max-width:760px){
+  .pg-hero{padding-top:72px !important;padding-bottom:48px !important}
+  .wk-hero{padding-top:24px !important;padding-bottom:32px !important} /* Work: title and counts high up, close to the nav */
+  .wk-stats .wk-statbox{padding:0 18px !important}
+  .pg-cta{padding:36px 22px !important;border-radius:24px !important}
+  .pg-cta-h{font-size:40px !important}
+  .pg-sec{padding-top:72px !important;padding-bottom:72px !important}
+  .pg-tabs{flex-wrap:nowrap !important;overflow-x:auto;scrollbar-width:none;margin:0 -20px;padding-left:20px !important;padding-right:20px !important}
+  .pg-tabs::-webkit-scrollbar{display:none}
+  .pg-tabs > *{flex:none}
+
+  /* work */
+  .mm-wall{gap:10px}
+  .mm-tile{margin-bottom:10px;border-radius:14px}
+  /* phones: the tiles just rise in. The sideways throw of computers (up to 180px) pushed some fully off a phone screen,
+     so they never counted as "on screen" and stayed invisible */
+  .mm-ready .mm-tile.rv{transform:translateY(50px) scale(.94)}
+  .mm-tinfo{opacity:1;transform:none;padding:10px}
+  .mm-tinfo span{font-size:11px !important}
+  .mm-play{height:28px;font-size:10px;top:8px;inset-inline-end:8px}
+  .wk-tools{top:67px}
+  .wk-tools > div{padding-top:12px !important;padding-bottom:12px !important}
+  .mm-stat{font-size:40px}
+  .mm-lbside{display:none !important}
+  .mm-lbnav{bottom:20px !important;top:auto !important;margin-top:0 !important}
+  .wk-lb{padding:76px 12px 96px !important}
+  .wk-lbmedia{height:min(68vh,640px) !important;border-radius:16px !important}
+  .mm-en .wk-h1{font-size:52px !important}
+
+  /* news */
+  .nw-grid{grid-template-columns:1fr !important;gap:40px !important}
+  .nw-featimg{height:300px !important}
+  .nw-featttl{font-size:32px !important}
+  .nw-nl h2{font-size:40px !important}
+  .mm-en .nw-h1{font-size:36px !important} /* the brand font is wider than the old one: "ANNOUNCEMENTS" must fit a 360px phone */
+  .nw-cover{height:280px !important;border-radius:20px !important}
+  .nw-body{font-size:17px !important}
+
+  /* careers */
+  .mm-rmeta{display:none !important}
+  .mm-strip > div{height:220px !important;width:200px !important}
+  .cr-rtitle{font-size:26px !important}
+  .mm-role{padding:22px 4px !important}
+  .mm-open{padding:0 4px 28px !important}
+  .cr-h2{font-size:48px !important}
+  .cr-h2s{font-size:40px !important}
+  .mm-en .cr-h1{font-size:60px !important}
+
+  /* job */
+  .mm-two{grid-template-columns:1fr !important}
+  .mm-side{position:static !important}
+  .jb-tabs{top:67px !important}
+  .jb-tab{height:58px !important;padding:0 12px !important;font-size:12px !important}
+  .mm-jh2,.jb-legend{font-size:30px !important}
+  .jb-panel{padding-bottom:80px !important}
+  .jb-cta{padding:28px !important}
+  .jb-cta-h{font-size:34px !important}
+  .mm-en .jb-h1{font-size:52px !important}
+  .jb-done{padding:96px 20px !important}
+}
+@media (prefers-reduced-motion:reduce){
+  .mm-strip,.mm-rise,.mm-popin,.mm-tabin,.mm-lb,.mm-lbi,.mm-open,.jb-bar > span,.jb-spin{animation:none !important}
+  .mm-ready .mm-tile.rv{opacity:1 !important;transform:none !important;transition:none !important}
+}
+/* Work page numbers: a thin line between them */
+.wk-stats .wk-statbox + .wk-statbox{border-inline-start:1px solid var(--line2)}
+.wk-stats .wk-statbox:first-child{padding-inline-start:0 !important} /* the numbers start at the text's edge */
