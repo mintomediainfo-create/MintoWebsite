@@ -82,6 +82,29 @@ app.use('/api/auth', wrap(authRouter));
 app.use('/api/admin', wrap(adminRouter));
 app.use('/api', wrap(publicRouter));
 
+// TEMPORARY diagnosis of the Work save hang (remove after): does the same work as a Work save, timed step by step,
+// inside a transaction that is rolled back (nothing changes). Needs the key.
+app.get('/api/_diag/work/:id', async (req, res) => {
+  if (req.query.k !== 'e349e7aab9f9bbaf24ee13b5') return res.status(404).end();
+  const { pool } = await import('./db');
+  const id = Number(req.params.id);
+  const out: string[] = []; const t0 = Date.now(); const mark = (m: string) => out.push(`${Date.now() - t0}ms ${m}`);
+  const lim = (p: Promise<any>, what: string): Promise<any> => Promise.race([p, new Promise<any>((_, r) => setTimeout(() => r(new Error('TIMEOUT ' + what)), 6000))]);
+  let c: any;
+  try {
+    mark(`pool total=${pool.totalCount} idle=${pool.idleCount} waiting=${pool.waitingCount}`);
+    c = await lim(pool.connect(), 'connect'); mark('connected');
+    await lim(c.query('BEGIN'), 'begin'); mark('begin');
+    const a = await lim(c.query('SELECT featured, on_home, active FROM work_items WHERE id = $1', [id]), 'select'); mark(`select rows=${a.rowCount}`);
+    const b = await lim(c.query('UPDATE work_items SET client_name = client_name WHERE id = $1 RETURNING *', [id]), 'update'); mark(`update rows=${b.rowCount}`);
+    await lim(c.query('ROLLBACK'), 'rollback'); mark('rolled back');
+  } catch (e) {
+    mark('ERROR ' + (e as Error).message);
+    try { await c?.query('ROLLBACK'); } catch { /* ignore */ }
+  } finally { try { c?.release(true); } catch { /* ignore */ } }
+  res.json(out);
+});
+
 // development only: when R2 is not set up, uploads are written to server/uploads
 if (!useR2) {
   app.put('/api/local-upload/:key(*)', express.raw({ type: '*/*', limit: '200mb' }), (req, res) => {
