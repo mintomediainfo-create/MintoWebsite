@@ -125,7 +125,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 @keyframes mm-fromB{from{transform:translateY(950px)}to{transform:none}}
 .mm-marq{animation:mm-marq 52s linear infinite}
 .mm-logos{animation:mm-logos 80s linear infinite}
-.mm-logobar:hover .mm-logos{animation-play-state:paused}
+/* pause under the mouse only: on phones a tap leaves :hover stuck, which stopped the band for good */
+@media (hover:hover) and (pointer:fine){ .mm-logobar:hover .mm-logos{animation-play-state:paused} }
 .mm-cue{animation:mm-cue 1.8s cubic-bezier(.7,0,.3,1) 5.2s infinite both}
 .mm-fade{animation:mm-fade 1s ease .9s both}
 .mm-L{animation-duration:1.8s;animation-timing-function:cubic-bezier(.16,.84,.24,1);animation-fill-mode:both;animation-iteration-count:1}
