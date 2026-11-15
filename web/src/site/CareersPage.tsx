@@ -10,7 +10,7 @@ import '../styles/pages.css';
 const PG = {
   en: {
     h1a: 'Shape the future', h1b: 'with us',
-    intro: 'Join the team of creators. At Minto Media, passion is the primary engine of creativity. We are always looking for creative minds, storytellers, and video editors who possess the passion to leave a true mark in the world of digital media.',
+    intro: 'Join the team of creators. At Minto Media, passion is the primary engine of creativity. We are always looking for creative minds with the passion to leave a true mark in the world of digital media.',
     whyTitle: 'Why join Minto Media',
     why: [['Stimulating work environment', 'A flexible environment that encourages innovation and out-of-the-box thinking.'], ['Major projects', 'The opportunity to work on massive media projects and with prominent brands.'], ['Continuous growth', 'Access to the latest production and media tools and technologies.']],
     seeRoles: 'See open positions ↓', aLife: 'Life at Minto', openRoles: 'Open positions', aFilter: 'Filter roles', all: 'All',
@@ -22,7 +22,7 @@ const PG = {
   },
   ar: {
     h1a: 'اصنع المستقبل', h1b: 'معانا',
-    intro: 'انضم لفريق المبدعين. في منتو ميديا الشغف هو المحرّك الأول للإبداع. دايمًا بندوّر على عقول مبدعة وحكّائين ومونتيرين عندهم الشغف يسيبوا بصمة حقيقية في عالم الإعلام الرقمي.',
+    intro: 'انضم لفريق المبدعين. في منتو ميديا الشغف هو المحرّك الأول للإبداع. دايمًا بندوّر على عقول مبدعة عندها الشغف تسيب بصمة حقيقية في عالم الإعلام الرقمي.',
     whyTitle: 'ليه تنضم لمنتو ميديا',
     why: [['بيئة شغل محفّزة', 'بيئة مرنة بتشجّع على الابتكار والتفكير برّه الصندوق.'], ['مشاريع كبيرة', 'فرصة تشتغل على مشاريع إعلامية ضخمة ومع براندات معروفة.'], ['نمو مستمر', 'وصول لأحدث أدوات وتقنيات الإنتاج والإعلام.']],
     seeRoles: 'الوظائف المتاحة ↓', aLife: 'الحياة في منتو', openRoles: 'الوظائف المتاحة', aFilter: 'تصفية الوظائف', all: 'الكل',
