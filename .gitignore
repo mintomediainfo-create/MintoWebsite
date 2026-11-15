@@ -7,3 +7,4 @@ server/uploads/
 
 # the site's media (videos, client logos, hero) lives on Cloudflare R2: upload with npm run media:upload
 web/public/media/
+prod.env
