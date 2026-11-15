@@ -21,7 +21,18 @@ app.use('/api/admin', (req, res, next) => {
   res.on('close', () => { if (!res.writableFinished) console.log(`xx ${req.method} /api/admin${req.path} closed without an answer after ${Date.now() - t}ms`); });
   next();
 });
-app.use(express.json({ limit: '1mb' }));
+// JSON bodies. On Vercel the platform may already have read the request body (req.body is set); reading the stream
+// again then waits forever (FUNCTION_INVOCATION_TIMEOUT on every Save). So use that body when it is there.
+const jsonBody = express.json({ limit: '1mb' });
+app.use((req, res, next) => {
+  let pre: unknown;
+  try { pre = (req as any).body; } catch { pre = undefined; }
+  if (pre && typeof pre === 'object' && !Buffer.isBuffer(pre)) { (req as any)._body = true; return next(); }
+  if (typeof pre === 'string' && pre && /json/i.test(req.get('content-type') || '')) {
+    try { (req as any).body = JSON.parse(pre); (req as any)._body = true; return next(); } catch { return res.status(400).json({ error: 'Bad JSON' }); }
+  }
+  return jsonBody(req, res, next);
+});
 app.use(cookieParser());
 
 // small async wrapper so a thrown error becomes a 500 instead of a hanging request
