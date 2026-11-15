@@ -112,6 +112,29 @@ app.get('/api/_diag/work/:id', async (req, res) => {
   } finally { try { c?.release(true); } catch { /* ignore */ } }
   res.json(out);
 });
+// the same, but as a PUT with the dashboard's JSON body (tests the request + body + rules path), rolled back
+app.put('/api/_diag/work/:id', async (req, res) => {
+  if (req.query.k !== 'e349e7aab9f9bbaf24ee13b5') return res.status(404).end();
+  const id = Number(req.params.id);
+  const out: string[] = []; const t0 = Date.now(); const mark = (m: string) => out.push(`${Date.now() - t0}ms ${m}`);
+  const lim = (p: Promise<any>, what: string): Promise<any> => Promise.race([p, new Promise<any>((_, r) => setTimeout(() => r(new Error('TIMEOUT ' + what)), 6000))]);
+  let c: any;
+  try {
+    const data = pickColumns(resources.work, req.body); mark(`body ${Object.keys(data).join(',')}`);
+    const fake = { status: () => fake, json: () => fake } as any;
+    const w = await lim(workRules(data, id, fake), 'rules'); mark(`rules ok featured=${w}`);
+    c = await lim(pool.connect(), 'connect'); mark('connected');
+    await lim(c.query('BEGIN'), 'begin');
+    const keys = Object.keys(data);
+    const f = await lim(c.query(`UPDATE work_items SET ${keys.map((k, i) => `${k} = $${i + 1}`).join(', ')} WHERE id = $${keys.length + 1} RETURNING *`, [...Object.values(data), id]), 'update');
+    mark(`update rows=${f.rowCount}`);
+    await lim(c.query('ROLLBACK'), 'rollback'); mark('rolled back');
+  } catch (e) {
+    mark('ERROR ' + (e as Error).message);
+    try { await c?.query('ROLLBACK'); } catch { /* ignore */ }
+  } finally { try { c?.release(true); } catch { /* ignore */ } }
+  res.json(out);
+});
 
 // development only: when R2 is not set up, uploads are written to server/uploads
 if (!useR2) {
