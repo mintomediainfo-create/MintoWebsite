@@ -90,14 +90,22 @@ adminRouter.get('/r/:res/:id', async (req, res) => {
 
 // Work items: only one Featured; Featured always shows on the home page; at most 5 more pieces on the home page.
 const HOME_EXTRA = 5;
+/** A promise that gives up after `ms` with a clear error (a database call on Vercel could hang until the function died). */
+function withLimit<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+  let t: NodeJS.Timeout;
+  return Promise.race([p, new Promise<T>((_, rej) => { t = setTimeout(() => rej(new Error(`The database did not answer in time (${what}). Please try again.`)), ms); })])
+    .finally(() => clearTimeout(t));
+}
 async function workRules(data: Record<string, any>, id: number | null, res: any) {
-  const cur = id ? await one<any>('SELECT featured, on_home, active FROM work_items WHERE id = $1', [id]) : null;
+  // the saved state is only needed for fields the request leaves out (the dashboard always sends all three)
+  const all = 'featured' in data && 'on_home' in data && 'active' in data;
+  const cur = id && !all ? await withLimit(one<any>('SELECT featured, on_home, active FROM work_items WHERE id = $1', [id]), 5000, 'reading the work item') : null;
   const featured = 'featured' in data ? !!data.featured : !!cur?.featured;
   if (featured) data.on_home = true;
   const onHome = 'on_home' in data ? !!data.on_home : !!cur?.on_home;
   const active = 'active' in data ? !!data.active : cur ? !!cur.active : true;
   if (onHome && !featured && active) {
-    const n = await one<{ n: string }>('SELECT count(*) AS n FROM work_items WHERE on_home AND active AND NOT featured AND ($1::int IS NULL OR id <> $1)', [id]);
+    const n = await withLimit(one<{ n: string }>('SELECT count(*) AS n FROM work_items WHERE on_home AND active AND NOT featured AND ($1::int IS NULL OR id <> $1)', [id]), 5000, 'counting the home page pieces');
     if (Number(n?.n || 0) >= HOME_EXTRA) { res.status(409).json({ error: `The home page already shows ${HOME_EXTRA} pieces plus the Featured one. Turn off “Show on home page” on another piece first.` }); return false; }
   }
   return featured;
@@ -156,10 +164,10 @@ adminRouter.put('/r/:res/:id', async (req, res) => {
   if (r.slugFrom && 'slug' in data) data.slug = await uniqueSlug(r.table, String(data.slug || req.body?.[r.slugFrom]?.en || 'item'), id);
   const keys = Object.keys(data);
   if (!keys.length) return res.json(await one(`SELECT * FROM ${r.table} WHERE id = $1`, [id]));
-  const row = await one(
+  const row = await withLimit(one(
     `UPDATE ${r.table} SET ${keys.map((k, i) => `${k} = $${i + 1}`).join(', ')} WHERE id = $${keys.length + 1} RETURNING *`,
     [...Object.values(data), id]
-  );
+  ), 9000, 'saving');
   step('update ok');
   if (row && workFeatured) await onlyOneFeatured(id);
   if (row && req.params.res === 'news') await notifyNews(id).catch((e) => console.error('newsletter failed', e));
