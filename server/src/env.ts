@@ -37,5 +37,6 @@ export const mailEnv = {
   SMTP_USER: process.env.SMTP_USER || '',
   SMTP_PASS: process.env.SMTP_PASS || '',
   MAIL_FROM: process.env.MAIL_FROM || 'Minto Media <no-reply@mintomediaagency.com>',
-  SITE_URL: (process.env.SITE_URL || 'http://localhost:5173').replace(/\/$/, ''),
+  // the site's address in emails (dashboard links, password reset). On Vercel without SITE_URL: the live domain.
+  SITE_URL: (process.env.SITE_URL || (process.env.VERCEL ? 'https://www.mintomediaagency.com' : 'http://localhost:5173')).replace(/\/$/, ''),
 };

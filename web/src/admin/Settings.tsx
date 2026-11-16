@@ -113,6 +113,7 @@ export function AccountSettings() {
   const { toast, fail, confirm } = useUi();
   const admins = useLoad<Any[]>('/admin/admins');
   const [name, setName] = useState(me.name);
+  const [email, setEmail] = useState(me.email);
   const [cur, setCur] = useState('');
   const [pw, setPw] = useState('');
   const [pw2, setPw2] = useState('');
@@ -124,11 +125,13 @@ export function AccountSettings() {
     e.preventDefault();
     if (pw && pw.length < 8) { toast('The new password needs 8 or more characters.', 'error'); return; }
     if (pw !== pw2) { toast('The two new passwords are not the same.', 'error'); return; }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) { toast('Please type a valid email address.', 'error'); return; }
     if (!cur) { toast('Please type your current password to confirm.', 'error'); return; }
     setBusy(true);
     try {
-      await api('/admin/account', { method: 'PUT', body: { name, currentPassword: cur, ...(pw ? { newPassword: pw } : {}) } });
-      setMe({ ...me, name });
+      const r = await api<{ email: string }>('/admin/account', { method: 'PUT', body: { name, email: email.trim(), currentPassword: cur, ...(pw ? { newPassword: pw } : {}) } });
+      setMe({ ...me, name, email: r.email });
+      setEmail(r.email);
       setCur(''); setPw(''); setPw2('');
       toast(pw ? 'Your account is saved and your password changed.' : 'Your account is saved.');
       admins.reload();
@@ -158,7 +161,7 @@ export function AccountSettings() {
       <div className="adm-two top">
         <Card title="My account">
           <form className="adm-form" onSubmit={saveAccount}>
-            <div className="adm-field"><span className="adm-label">Email</span><div className="adm-readonly">{me.email}</div></div>
+            <TextIn label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" hint="Use a real inbox: if you forget your password, the reset link is sent here. You log in with this email." />
             <TextIn label="Your name" value={name} onChange={setName} autoComplete="name" />
             <TextIn label="New password (optional)" type="password" value={pw} onChange={setPw} autoComplete="new-password" hint="8 or more characters. Leave empty to keep your password." />
             {pw && <TextIn label="Type the new password again" type="password" value={pw2} onChange={setPw2} autoComplete="new-password" />}

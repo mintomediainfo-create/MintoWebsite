@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { q, one } from '../db';
-import { requireAdmin, AuthedRequest, checkPassword, hashPassword } from '../lib/auth';
+import { requireAdmin, AuthedRequest, checkPassword, hashPassword, setSession } from '../lib/auth';
 import path from 'path';
 import { makeKey, publicUrl, signUpload, signDownload, removeFile, useR2, LOCAL_DIR } from '../lib/storage';
 import { resources, pickColumns, slugify } from '../resources';
@@ -282,14 +282,25 @@ adminRouter.delete('/admins/:id', async (req: AuthedRequest, res) => {
   res.json({ ok: true });
 });
 adminRouter.put('/account', async (req: AuthedRequest, res) => {
-  const p = z.object({ name: z.string().max(80).optional(), currentPassword: z.string(), newPassword: z.string().min(8).max(200).optional() }).safeParse(req.body);
-  if (!p.success) return res.status(400).json({ error: 'The new password needs 8+ characters.' });
+  const p = z.object({
+    name: z.string().max(80).optional(),
+    email: z.string().trim().email().max(200).optional(), // a real inbox: "Forgot password" emails go to it
+    currentPassword: z.string(),
+    newPassword: z.string().min(8).max(200).optional(),
+  }).safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: p.error.issues.some((i) => i.path[0] === 'email') ? 'Please type a valid email address.' : 'The new password needs 8+ characters.' });
   const me = await one<any>('SELECT * FROM admins WHERE id = $1', [req.admin!.id]);
   if (!me || !(await checkPassword(p.data.currentPassword, me.password_hash))) return res.status(403).json({ error: 'Your current password is not right.' });
-  await q('UPDATE admins SET name = COALESCE($1, name), password_hash = $2 WHERE id = $3', [
+  const email = (p.data.email || me.email).toLowerCase();
+  if (email !== me.email.toLowerCase() && (await one('SELECT id FROM admins WHERE lower(email) = $1 AND id <> $2', [email, me.id]))) {
+    return res.status(409).json({ error: 'Another admin already uses this email.' });
+  }
+  await q('UPDATE admins SET name = COALESCE($1, name), email = $2, password_hash = $3 WHERE id = $4', [
     p.data.name ?? null,
+    email,
     p.data.newPassword ? await hashPassword(p.data.newPassword) : me.password_hash,
     me.id,
   ]);
-  res.json({ ok: true });
+  if (email !== me.email) setSession(res, { id: me.id, email }); // the login cookie carries the email
+  res.json({ ok: true, email });
 });

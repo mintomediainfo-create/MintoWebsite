@@ -813,15 +813,132 @@ function Work({ items, live }: { items: any[]; live: boolean }) {
 // =====================================================================
 // TRUSTED BY — moving band of client logos with the Minto symbol between them
 // =====================================================================
+// The band moves by itself (4 s per logo, a quarter faster than the old 5 s), stops under the mouse, and follows a mouse
+// drag or a finger swipe (with a short glide after letting go), then carries on by itself. Moved from JS, not a CSS
+// animation, so it can be dragged. Fingers moving up/down still scroll the page (touch-action: pan-y in the CSS).
+const SEC_PER_LOGO = 4;
+function useLogoBand(bar: { current: HTMLDivElement | null }, track: { current: HTMLDivElement | null }, halfLen: number, reduced: boolean) {
+  useEffect(() => {
+    const b = bar.current, tr = track.current;
+    if (!b || !tr || !halfLen) return;
+    let x = 0; // where the band is (px; moving left = more negative)
+    let period = 0; // width of one half: moving by exactly this much looks the same, so x stays in (-period, 0]
+    let speed = 0; // px per second when it moves by itself
+    let glide = 0; // px per second left from a fling; fades out
+    let hover = false;
+    let drag: number | null = null; // the pointer that is dragging
+    let lastX = 0;
+    let samples: [number, number][] = []; // recent [time, x] of the drag, for the fling speed
+    let visible = true, raf = 0, last = 0;
+
+    const measure = () => {
+      const first = tr.children[0] as HTMLElement | undefined, mid = tr.children[halfLen] as HTMLElement | undefined;
+      period = first && mid ? mid.offsetLeft - first.offsetLeft : tr.scrollWidth / 2;
+      speed = (period / (halfLen * SEC_PER_LOGO)) * (reduced ? 0.8 : 1);
+    };
+    const wrap = () => { if (period > 0) x = (((x % period) + period) % period) - period; };
+    const paint = () => { tr.style.transform = `translate3d(${x.toFixed(2)}px,0,0)`; };
+    const frame = (now: number) => {
+      raf = 0;
+      const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
+      last = now;
+      if (drag === null) {
+        if (!hover) x -= speed * dt;
+        if (glide) {
+          x += glide * dt;
+          glide *= Math.pow(0.03, dt);
+          if (Math.abs(glide) < 5) glide = 0;
+        }
+        wrap();
+        paint();
+      }
+      schedule();
+    };
+    const schedule = () => { if (!raf && visible) raf = requestAnimationFrame(frame); };
+
+    const down = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      drag = e.pointerId;
+      lastX = e.clientX;
+      glide = 0;
+      samples = [[e.timeStamp, e.clientX]];
+      if (e.pointerType === 'mouse') e.preventDefault(); // no text selection / picture dragging
+      try { b.setPointerCapture(e.pointerId); } catch { /* not supported */ }
+      b.classList.add('grabbing');
+    };
+    const move = (e: PointerEvent) => {
+      if (e.pointerId !== drag) return;
+      x += e.clientX - lastX;
+      lastX = e.clientX;
+      wrap();
+      paint();
+      samples.push([e.timeStamp, e.clientX]);
+      while (samples.length > 2 && e.timeStamp - samples[0][0] > 100) samples.shift();
+    };
+    const up = (e: PointerEvent) => {
+      if (e.pointerId !== drag) return;
+      drag = null;
+      b.classList.remove('grabbing');
+      // a quick flick keeps it going for a moment (not when the finger was resting before letting go, or the page took over)
+      const [t0, x0] = samples[0] || [0, 0];
+      const [t1, x1] = samples[samples.length - 1] || [0, 0];
+      if (e.type === 'pointerup' && t1 > t0 && e.timeStamp - t1 < 80) glide = Math.max(-3000, Math.min(3000, ((x1 - x0) / (t1 - t0)) * 1000));
+      samples = [];
+      last = 0;
+      schedule();
+    };
+    const enter = (e: PointerEvent) => { if (e.pointerType === 'mouse') hover = true; };
+    const leave = (e: PointerEvent) => { if (e.pointerType === 'mouse') hover = false; };
+    const noDrag = (e: Event) => e.preventDefault();
+
+    measure();
+    paint();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { measure(); wrap(); paint(); }) : null;
+    ro?.observe(tr);
+    const io = typeof IntersectionObserver !== 'undefined'
+      ? new IntersectionObserver(([en]) => {
+          visible = en.isIntersecting;
+          if (visible) { last = 0; schedule(); } else if (raf) { cancelAnimationFrame(raf); raf = 0; }
+        })
+      : null;
+    io?.observe(b);
+    b.addEventListener('pointerdown', down);
+    b.addEventListener('pointermove', move);
+    b.addEventListener('pointerup', up);
+    b.addEventListener('pointercancel', up);
+    b.addEventListener('pointerenter', enter);
+    b.addEventListener('pointerleave', leave);
+    b.addEventListener('dragstart', noDrag);
+    schedule();
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      ro?.disconnect();
+      io?.disconnect();
+      b.removeEventListener('pointerdown', down);
+      b.removeEventListener('pointermove', move);
+      b.removeEventListener('pointerup', up);
+      b.removeEventListener('pointercancel', up);
+      b.removeEventListener('pointerenter', enter);
+      b.removeEventListener('pointerleave', leave);
+      b.removeEventListener('dragstart', noDrag);
+      b.classList.remove('grabbing');
+    };
+  }, [bar, track, halfLen, reduced]);
+}
+
 function Clients({ items }: { items: any[] }) {
   const t = useT();
   const { theme } = usePrefs();
   const dark = theme === 'dark';
   const sym = useLogo();
-  if (!items.length) return null;
-  // the band scrolls by half its width, so it is two identical halves, each long enough to fill a wide screen
-  const perHalf = Math.max(1, Math.ceil(8 / items.length));
+  const reduced = useReduced();
+  const bar = useRef<HTMLDivElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  // two identical halves (moving by one half looks the same), each long enough to fill a wide screen
+  const perHalf = Math.max(1, Math.ceil(8 / Math.max(1, items.length)));
   const half = Array.from({ length: perHalf }, () => items).flat();
+  useLogoBand(bar, track, half.length, reduced);
+  if (!items.length) return null;
   const all = [...half, ...half];
   const logo = (c: any) => {
     if (dark) {
@@ -839,8 +956,8 @@ function Clients({ items }: { items: any[] }) {
         <span className="rv rv-left mm-eyebrow" style={{ whiteSpace: 'nowrap' }}>{t.trustedBy}</span>
         <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
       </div>
-      <div className="mm-logobar">
-        <div className="mm-logos" style={{ animationDuration: `${half.length * 5}s` }}>
+      <div className="mm-logobar" ref={bar}>
+        <div className="mm-logos" ref={track}>
           {all.map((c, k) => {
             const lg = logo(c);
             const copy = k >= items.length;
@@ -848,9 +965,9 @@ function Clients({ items }: { items: any[] }) {
               <span key={k} className="mm-logoitem" aria-hidden={copy || undefined}>
                 <span className="mm-clogo" style={{ filter: lg ? lg.fx : undefined }}>
                   {/* not lazy: Safari on iPhone does not load lazy images that the moving band brings into view, so they stayed blank */}
-                  {lg ? <img src={lg.src} alt={copy ? '' : c.name} decoding="async" /> : <span className="mm-cname">{c.name}</span>}
+                  {lg ? <img src={lg.src} alt={copy ? '' : c.name} decoding="async" draggable={false} /> : <span className="mm-cname">{c.name}</span>}
                 </span>
-                <img className="mm-sym" src={sym} alt="" width={38} height={40} />
+                <img className="mm-sym" src={sym} alt="" width={38} height={40} draggable={false} />
               </span>
             );
           })}

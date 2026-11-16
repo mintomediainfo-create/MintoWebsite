@@ -1,6 +1,6 @@
 // Minto Media dashboard: login, guard, layout (sidebar / phone drawer) and routes.
-import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { Navigate, NavLink, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react';
+import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/admin.css';
 import { api, ApiError } from '../lib/api';
 import { ShellCtx, Me, Summary } from './shell';
@@ -45,6 +45,8 @@ export default function Admin() {
       <UiProvider>
         <Routes>
           <Route path="login" element={<Login />} />
+          <Route path="forgot" element={<Forgot />} />
+          <Route path="reset" element={<Reset />} />
           <Route path="*" element={<Guard />} />
         </Routes>
       </UiProvider>
@@ -84,13 +86,7 @@ function Login() {
   }
 
   return (
-    <main className="adm-login">
-      <div className="adm-login-bg" aria-hidden="true">
-        <span className="adm-blob b1" /><span className="adm-blob b2" /><span className="adm-blob b3" />
-        <img className="adm-sym s1" src="/minto-symbol.png" alt="" />
-        <img className="adm-sym s2" src="/minto-symbol.png" alt="" />
-        <img className="adm-sym s3" src="/minto-symbol.png" alt="" />
-      </div>
+    <LoginFrame>
       <form className="adm-login-card" onSubmit={submit} noValidate>
         <div className="adm-brand big"><img className="adm-logo" src="/minto-symbol.png" alt="" /><span>Minto <b>Dashboard</b></span></div>
         <h1>Log in</h1>
@@ -107,11 +103,135 @@ function Login() {
             <button type="button" className="adm-linkbtn" onClick={() => setShow(!show)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</button>
           </div>
         </div>
+        <Link className="adm-login-forgot" to={'/admin/forgot' + (email.trim() ? '?email=' + encodeURIComponent(email.trim()) : '')}>Forgot your password?</Link>
         <button type="submit" className="adm-btn primary block" disabled={busy}>{busy ? 'Logging in…' : 'Log in'}</button>
         <a className="adm-login-back" href="/">← Back to the website</a>
       </form>
+    </LoginFrame>
+  );
+}
+
+/** The background of the login, forgot and reset pages. */
+function LoginFrame({ children }: { children: ReactNode }) {
+  return (
+    <main className="adm-login">
+      <div className="adm-login-bg" aria-hidden="true">
+        <span className="adm-blob b1" /><span className="adm-blob b2" /><span className="adm-blob b3" />
+        <img className="adm-sym s1" src="/minto-symbol.png" alt="" />
+        <img className="adm-sym s2" src="/minto-symbol.png" alt="" />
+        <img className="adm-sym s3" src="/minto-symbol.png" alt="" />
+      </div>
+      {children}
       <p className="adm-login-foot">Minto Media · We support your success</p>
     </main>
+  );
+}
+
+const netErr = (e: unknown) => (e instanceof ApiError ? e.message : 'Could not reach the server. Check your internet connection.');
+
+/* ------------------------------------------------------------------ forgot password: email a reset link */
+
+function Forgot() {
+  const [sp] = useSearchParams();
+  const [email, setEmail] = useState(sp.get('email') || '');
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setErr('');
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setErr('Please type the email you log in with.'); return; }
+    setBusy(true);
+    try {
+      await api('/auth/forgot', { body: { email: email.trim() } });
+      setSent(true);
+    } catch (e2) { setErr(netErr(e2)); } finally { setBusy(false); }
+  }
+
+  return (
+    <LoginFrame>
+      <form className="adm-login-card" onSubmit={submit} noValidate>
+        <div className="adm-brand big"><img className="adm-logo" src="/minto-symbol.png" alt="" /><span>Minto <b>Dashboard</b></span></div>
+        <h1>Forgot your password?</h1>
+        {sent ? (
+          <>
+            <div className="adm-login-ok" role="status">
+              If <b>{email.trim()}</b> has a dashboard account, we just sent it a link to choose a new password.
+            </div>
+            <p className="adm-muted">Open the email and press the button. The link works for 30 minutes. Not there? Check the Spam folder, or send it again in a minute.</p>
+            <button type="button" className="adm-btn ghost block" onClick={() => setSent(false)}>Send it again</button>
+          </>
+        ) : (
+          <>
+            <p className="adm-muted">Type the email you log in with. We will send it a link to choose a new password.</p>
+            {err && <div className="adm-login-err" role="alert">{err}</div>}
+            <div className="adm-field">
+              <label className="adm-label" htmlFor="adm-email">Email</label>
+              <input id="adm-email" className="adm-input" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
+            </div>
+            <button type="submit" className="adm-btn primary block" disabled={busy}>{busy ? 'Sending…' : 'Send me a reset link'}</button>
+          </>
+        )}
+        <Link className="adm-login-back" to="/admin/login">← Back to log in</Link>
+      </form>
+    </LoginFrame>
+  );
+}
+
+/* ------------------------------------------------------------------ reset password: the link from the email (/admin/reset#token) */
+
+function Reset() {
+  const navigate = useNavigate();
+  // the token is after # (never sent to a server); keep it in memory and take it out of the address bar
+  const [token] = useState(() => decodeURIComponent(window.location.hash.slice(1)));
+  useEffect(() => { if (window.location.hash) window.history.replaceState(null, '', window.location.pathname); }, []);
+  const [pw, setPw] = useState('');
+  const [pw2, setPw2] = useState('');
+  const [show, setShow] = useState(false);
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setErr('');
+    if (pw.length < 8) { setErr('The new password needs 8 or more characters.'); return; }
+    if (pw !== pw2) { setErr('The two passwords are not the same.'); return; }
+    setBusy(true);
+    try {
+      await api('/auth/reset', { body: { token, password: pw } });
+      navigate('/admin', { replace: true }); // the server logged you in
+    } catch (e2) { setErr(netErr(e2)); } finally { setBusy(false); }
+  }
+
+  return (
+    <LoginFrame>
+      <form className="adm-login-card" onSubmit={submit} noValidate>
+        <div className="adm-brand big"><img className="adm-logo" src="/minto-symbol.png" alt="" /><span>Minto <b>Dashboard</b></span></div>
+        <h1>Choose a new password</h1>
+        {!token ? (
+          <div className="adm-login-err" role="alert">This link is not complete. Open it again from the email, or ask for a new one.</div>
+        ) : (
+          <>
+            <p className="adm-muted">8 or more characters. After this you are logged in.</p>
+            {err && <div className="adm-login-err" role="alert">{err}</div>}
+            <div className="adm-field">
+              <label className="adm-label" htmlFor="adm-npw">New password</label>
+              <div className="adm-pw">
+                <input id="adm-npw" className="adm-input" type={show ? 'text' : 'password'} autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus />
+                <button type="button" className="adm-linkbtn" onClick={() => setShow(!show)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</button>
+              </div>
+            </div>
+            <div className="adm-field">
+              <label className="adm-label" htmlFor="adm-npw2">Type it again</label>
+              <input id="adm-npw2" className="adm-input" type={show ? 'text' : 'password'} autoComplete="new-password" value={pw2} onChange={(e) => setPw2(e.target.value)} />
+            </div>
+            <button type="submit" className="adm-btn primary block" disabled={busy}>{busy ? 'Saving…' : 'Save and log in'}</button>
+          </>
+        )}
+        <Link className="adm-login-back" to="/admin/forgot">Ask for a new link</Link>
+      </form>
+    </LoginFrame>
   );
 }
 

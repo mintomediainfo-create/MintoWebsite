@@ -114,6 +114,11 @@
 .mm-trust .mm-trust-head .mm-eyebrow{font-size:26px}
 .mm-logobar{background:var(--band);color:var(--bandfg);border-top:1px solid var(--bandline);border-bottom:1px solid var(--bandline);overflow:hidden;padding:44px 0;transition:background .4s ease,color .4s ease}
 .mm-logos{display:flex;width:max-content;gap:48px;align-items:center}
+/* drag it with the mouse, swipe it with a finger (up/down swipes still scroll the page) */
+.mm-logobar{cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.mm-logobar.grabbing{cursor:grabbing}
+.mm-logobar img{-webkit-user-drag:none;pointer-events:none}
+.mm-logos{will-change:transform}
 .mm-logoitem{display:flex;align-items:center;gap:48px;font-size:18px;font-weight:700;white-space:nowrap}
 .mm-clogo{width:240px;height:120px;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
 .mm-clogo img{display:block;max-width:100%;max-height:100%;object-fit:contain}

@@ -116,7 +116,6 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 
 /* motion keyframes used across pages */
 @keyframes mm-marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@keyframes mm-logos{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes mm-cue{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
 @keyframes mm-fade{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 @keyframes mm-fromL{from{transform:translateX(-1500px)}to{transform:none}}
@@ -124,9 +123,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 @keyframes mm-fromT{from{transform:translateY(-950px)}to{transform:none}}
 @keyframes mm-fromB{from{transform:translateY(950px)}to{transform:none}}
 .mm-marq{animation:mm-marq 52s linear infinite}
-.mm-logos{animation:mm-logos 80s linear infinite}
-/* pause under the mouse only: on phones a tap leaves :hover stuck, which stopped the band for good */
-@media (hover:hover) and (pointer:fine){ .mm-logobar:hover .mm-logos{animation-play-state:paused} }
+/* .mm-logos (client logos band) is moved from JS: useLogoBand in Home.tsx (moves, stops under the mouse, can be dragged) */
 .mm-cue{animation:mm-cue 1.8s cubic-bezier(.7,0,.3,1) 5.2s infinite both}
 .mm-fade{animation:mm-fade 1s ease .9s both}
 .mm-L{animation-duration:1.8s;animation-timing-function:cubic-bezier(.16,.84,.24,1);animation-fill-mode:both;animation-iteration-count:1}
@@ -179,10 +176,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   .mm-hero-base{opacity:0}
   .mm-Ld{stroke-dashoffset:0}
   .mm-L,.mm-Ld,.mm-hero-base,.mm-menu,.mm-mlink,.mm-cue,.mm-fade,.mm-strip{animation:none !important}
-  /* the two bands (service words, client logos) still move, a bit slower: phones in power-saving mode turn
-     "reduce motion" on by themselves, and the client wants the bands moving */
+  /* the service words band still moves, a bit slower: phones in power-saving mode turn "reduce motion" on by
+     themselves, and the client wants the bands moving (the client logos band does the same in useLogoBand) */
   .mm-marq{animation-duration:75s !important}
-  .mm-logos{animation-duration:85s !important}
   .mm-ready .rv,.mm-ready .ln > span{opacity:1 !important;transform:none !important;transition:none !important}
   .mm-totop:hover .mm-toparr{animation:none}
 }
